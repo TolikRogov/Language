@@ -1,7 +1,8 @@
 #include "IdNameTable.hpp"
 #include "Tree_dump.hpp"
 #include "KeyWordsTable.hpp"
-#include "Frontend_reader.hpp"
+#include "Frontend_descent.hpp"
+#include "Frontend_standard.hpp"
 
 int main() {
 
@@ -16,7 +17,8 @@ int main() {
 	INIT_TREE(tree);
 	TREE_CTOR(&tree, &id_name_table);
 
-	READ_PROGRAM(&tree, &id_name_table, &lexer);
+	CREATE_TREE_FROM_FILE(&tree, &id_name_table, &lexer);
+	//STANDARDIZE_TREE(&tree);
 
 	ID_NAME_TABLE_DTOR(&id_name_table);
 	TREE_DTOR(&tree);

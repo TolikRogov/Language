@@ -96,6 +96,24 @@ BinaryTreeStatusCode NodePrintData(Node_t* node) {
 	return TREE_NO_ERROR;
 }
 
+const char* GetNodeType(Node_t* node) {
+
+	if (!node)
+		return NULL;
+
+	switch (node->type) {
+		case UNW: 					return RET_STRING(UNW);
+		case PARAMETERS:			return RET_STRING(PARAMETERS);
+		case CALL:					return RET_STRING(CALL);
+		case VAR_DECLARATION:		return RET_STRING(VAR_DECLARATION);
+		case NUMBER:				return RET_STRING(NUMBER);
+		case IDENTIFIER:			return RET_STRING(IDENTIFIER);
+		case KEYWORD:				return RET_STRING(KEYWORD);
+		case FUNCTION_DEFINITION:	return RET_STRING(FUNCTION_DEFINITION);
+		default: return NULL;
+	}
+}
+
 BinaryTreeStatusCode ReplaceUnknownWhat(Node_t* node, Data_t data, NodeType type) {
 
 	switch (type) {

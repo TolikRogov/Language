@@ -1,15 +1,16 @@
-#include "Frontend_reader.hpp"
+#include "Frontend_descent.hpp"
 #include "Tree_dump.hpp"
 
 Node_t* GetGrammar(Lexer* lexer, size_t* pc);
-Node_t* GetOperator(Lexer* lexer, size_t* pc);
+Node_t* GetFunction(Lexer* lexer, size_t* pc);
+Node_t* GetStatement(Lexer* lexer, size_t* pc);
 Node_t* GetAssignment(Lexer* lexer, size_t* pc);
 Node_t* GetIf(Lexer* lexer, size_t* pc);
 Node_t* GetExpression(Lexer* lexer, size_t* pc);
 Node_t* GetTerminator(Lexer* lexer, size_t* pc);
 Node_t* GetPriority(Lexer* lexer, size_t* pc);
 Node_t* GetPower(Lexer* lexer, size_t* pc);
-Node_t* GetFunction(Lexer* lexer, size_t* pc);
+Node_t* GetOperator(Lexer* lexer, size_t* pc);
 Node_t* GetIdentifier(Lexer* lexer, size_t* pc);
 Node_t* GetNumber(Lexer* lexer, size_t* pc);
 
@@ -40,10 +41,10 @@ Node_t* GetIdentifier(Lexer* lexer, size_t* pc) {
 		return NULL;
 }
 
-Node_t* GetFunction(Lexer* lexer, size_t* pc) {
+Node_t* GetOperator(Lexer* lexer, size_t* pc) {
 
 #ifdef PRINT_DEBUG
-	printf("Function (%zu): ", *pc);
+	printf("Operator (%zu): ", *pc);
 	PrintTokenValueGrammar(&lexer->tokens[*pc]);
 #endif
 
@@ -55,15 +56,11 @@ Node_t* GetFunction(Lexer* lexer, size_t* pc) {
 		if (lexer->tokens[*pc].data.val_key_word == OPEN_ROUND) {
 			(*pc)++;
 			node = GetExpression(lexer, pc);
-			if (!node) {
-				TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-				return NULL;
-			}
+			if (!node)
+				LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
-			if (lexer->tokens[*pc].data.val_key_word != CLOSE_ROUND) {
-				TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-				return NULL;
-			}
+			if (lexer->tokens[*pc].data.val_key_word != CLOSE_ROUND)
+				LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 			(*pc)++;
 			switch (key_word) {
@@ -86,18 +83,14 @@ Node_t* GetPower(Lexer* lexer, size_t* pc) {
 #endif
 
 	Node_t* node1 = GetPriority(lexer, pc);
-	if (!node1) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-		return NULL;
-	}
+	if (!node1)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 	while (lexer->tokens[*pc].data.val_key_word == POW) {
 		(*pc)++;
 		Node_t* node2 = GetPriority(lexer, pc);
-		if (!node2) {
-			TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-			return NULL;
-		}
+		if (!node2)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 		node1 = _POW(node1, node2);
 	}
@@ -117,15 +110,11 @@ Node_t* GetPriority(Lexer* lexer, size_t* pc) {
 	if (lexer->tokens[*pc].data.val_key_word == OPEN_ROUND) {
 		(*pc)++;
 		node = GetExpression(lexer, pc);
-		if (!node) {
-			TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-			return NULL;
-		}
+		if (!node)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
-		if (lexer->tokens[*pc].data.val_key_word != CLOSE_ROUND) {
-			TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-			return NULL;
-		}
+		if (lexer->tokens[*pc].data.val_key_word != CLOSE_ROUND)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 		(*pc)++;
 		return node;
@@ -136,7 +125,7 @@ Node_t* GetPriority(Lexer* lexer, size_t* pc) {
 	if ((node = GetIdentifier(lexer, pc)) != NULL)
 		return node;
 
-	if ((node = GetFunction(lexer, pc)) != NULL)
+	if ((node = GetOperator(lexer, pc)) != NULL)
 		return node;
 
 	return NULL;
@@ -150,18 +139,14 @@ Node_t* GetTerminator(Lexer* lexer, size_t* pc) {
 #endif
 
 	Node_t* node1 = GetPower(lexer, pc);
-	if (!node1) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-		return NULL;
-	}
+	if (!node1)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 	while (lexer->tokens[*pc].data.val_key_word == MUL || lexer->tokens[*pc].data.val_key_word == DIV) {
 		KeyWordNum key_word = lexer->tokens[(*pc)++].data.val_key_word;
 		Node_t* node2 = GetPower(lexer, pc);
-		if (!node2) {
-			TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-			return NULL;
-		}
+		if (!node2)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 		if (key_word == MUL)
 			node1 = _MUL(node1, node2);
@@ -180,18 +165,14 @@ Node_t* GetExpression(Lexer* lexer, size_t* pc) {
 #endif
 
 	Node_t* node1 = GetTerminator(lexer, pc);
-	if (!node1) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-		return NULL;
-	}
+	if (!node1)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 	while (lexer->tokens[*pc].data.val_key_word == ADD || lexer->tokens[*pc].data.val_key_word == SUB) {
 		KeyWordNum key_word = lexer->tokens[(*pc)++].data.val_key_word;
 		Node_t* node2 = GetTerminator(lexer, pc);
-		if (!node2) {
-			TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-			return NULL;
-		}
+		if (!node2)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 		if (key_word == ADD)
 			node1 = _ADD(node1, node2);
@@ -213,16 +194,12 @@ Node_t* GetAssignment(Lexer* lexer, size_t* pc) {
 	if (!node)
 		return NULL;
 
-	if (lexer->tokens[(*pc)++].data.val_key_word != ASSIGNMENT) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-		return NULL;
-	}
+	if (lexer->tokens[(*pc)++].data.val_key_word != ASSIGNMENT)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 	Node_t* node2 = GetExpression(lexer, pc);
-	if (!node2) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-		return NULL;
-	}
+	if (!node2)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 	return node = _ASSIGNMENT(node, node2);
 }
@@ -235,42 +212,41 @@ Node_t* GetIf(Lexer* lexer, size_t* pc) {
 #endif
 
 #define TERMINALS_CHECKER(terminal) {									 \
-	if (lexer->tokens[(*pc)++].data.val_key_word != terminal) {			\
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);				\
-		return NULL;													\
-	}																	\
+	if (lexer->tokens[(*pc)++].data.val_key_word != terminal)			\
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);								\
 }
 
-	TERMINALS_CHECKER(IF);
+	if (lexer->tokens[(*pc)++].data.val_key_word != IF)
+		return NULL;
 
 	TERMINALS_CHECKER(OPEN_ROUND);
 	Node_t* node = GetExpression(lexer, pc);
-	if (!node) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-		return NULL;
-	}
+	if (!node)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+
 	TERMINALS_CHECKER(CLOSE_ROUND);
 
 	TERMINALS_CHECKER(OPEN_FIGURE);
-	Node_t* node2 = GetOperator(lexer, pc);
-	if (!node2) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-		return NULL;
-	}
+	Node_t* node2 = GetStatement(lexer, pc);
+	if (!node2)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+
 	TERMINALS_CHECKER(SEQUENTIAL_OP)
 
 	node2 = _SEQUENTIAL_OP(node2, NULL);
 
+	Node_t* prev_node = node2;
 	while (lexer->tokens[(*pc)].data.val_key_word != CLOSE_FIGURE) {
-		(*pc)++;
-		Node_t* node3 = GetOperator(lexer, pc);
-		if (!node3) {
-			TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-			return NULL;
-		}
+		Node_t* node3 = GetStatement(lexer, pc);
+		if (!node3)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+
 		TERMINALS_CHECKER(SEQUENTIAL_OP);
 
-		node2->right = _SEQUENTIAL_OP(node3, NULL);
+		node3 = _SEQUENTIAL_OP(node3, NULL);
+		prev_node->right = node3;
+		node3->parent = prev_node;
+		prev_node = node3;
 	}
 
 	TERMINALS_CHECKER(CLOSE_FIGURE);
@@ -280,10 +256,10 @@ Node_t* GetIf(Lexer* lexer, size_t* pc) {
 	return node = _IF(node, node2);
 }
 
-Node_t* GetOperator(Lexer* lexer, size_t* pc) {
+Node_t* GetStatement(Lexer* lexer, size_t* pc) {
 
 #ifdef PRINT_DEBUG
-	printf("Operator (%zu): ", *pc);
+	printf("Statement (%zu): ", *pc);
 	PrintTokenValueGrammar(&lexer->tokens[*pc]);
 #endif
 
@@ -298,38 +274,45 @@ Node_t* GetOperator(Lexer* lexer, size_t* pc) {
 	return NULL;
 }
 
-Node_t* GetGrammar(Lexer* lexer, size_t* pc) {
+Node_t* GetFunction(Lexer* lexer, size_t* pc) {
 
 #ifdef PRINT_DEBUG
-	printf("Grammar (%zu): ", *pc);
+	printf("Function (%zu): ", *pc);
 	PrintTokenValueGrammar(&lexer->tokens[*pc]);
 #endif
 
-	Node_t* node = GetOperator(lexer, pc);
-	if (!node) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-		return NULL;
-	}
+#define TERMINALS_CHECKER(terminal) {									 \
+	if (lexer->tokens[(*pc)++].data.val_key_word != terminal)			\
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);								\
+}
 
-	if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
+	if (lexer->tokens[(*pc)++].data.val_key_word != INIT_TYPE)
 		return NULL;
-	}
+
+	Node_t* node = GetIdentifier(lexer, pc);
+	if (!node)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+	node = _FUNC_DEF(node->data.val_func_def, node, NULL);
+
+	TERMINALS_CHECKER(OPEN_ROUND);
+
+	Node_t* node = GetStatement(lexer, pc);
+	if (!node)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+
+	if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 	node = _SEQUENTIAL_OP(node, NULL);
 
 	Node_t* prev_node = node;
 	while ((*pc) != lexer->size) {
-		Node_t* node2 = GetOperator(lexer, pc);
-		if (!node2) {
-			TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-			return NULL;
-		}
+		Node_t* node2 = GetStatement(lexer, pc);
+		if (!node2)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
-		if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP) {
-			TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-			return NULL;
-		}
+		if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 		node2 = _SEQUENTIAL_OP(node2, NULL);
 		prev_node->right = node2;
@@ -337,15 +320,49 @@ Node_t* GetGrammar(Lexer* lexer, size_t* pc) {
 		prev_node = node2;
 	}
 
-	if ((*pc)++ != lexer->size) {
-		TREE_ERROR_MESSAGE(TREE_EXPRESSION_SYNTAX_ERROR);
-		return NULL;
+#undef TERMINALS_CHECKER
+
+	return NULL;
+}
+
+Node_t* GetGrammar(Lexer* lexer, size_t* pc) {
+
+#ifdef PRINT_DEBUG
+	printf("Grammar (%zu): ", *pc);
+	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+#endif
+
+	Node_t* node = GetFunction(lexer, pc);
+	if (!node)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+
+	if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+
+	node = _SEQUENTIAL_OP(node, NULL);
+
+	Node_t* prev_node = node;
+	while ((*pc) != lexer->size) {
+		Node_t* node2 = GetStatement(lexer, pc);
+		if (!node2)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+
+		if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP)
+			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+
+		node2 = _SEQUENTIAL_OP(node2, NULL);
+		prev_node->right = node2;
+		node2->parent = prev_node;
+		prev_node = node2;
 	}
+
+	if ((*pc)++ != lexer->size)
+		LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
 	return node;
 }
 
-BinaryTreeStatusCode ReadProgram(Tree* tree, IdNameTable* id_name_table, Lexer* lexer) {
+BinaryTreeStatusCode CreateTreeFromFile(Tree* tree, IdNameTable* id_name_table, Lexer* lexer) {
 
 	BinaryTreeStatusCode tree_status = TREE_NO_ERROR;
 
@@ -375,14 +392,81 @@ BinaryTreeStatusCode ReadProgram(Tree* tree, IdNameTable* id_name_table, Lexer* 
 #endif
 
 	lexer->buffer = buffer;
+	lexer->buffer_size = size;
 	LEXICAL_ANALYSIS(buffer, lexer, id_name_table, size);
 
 	size_t pc = 0;
 	tree->root = GetGrammar(lexer, &pc);
 	if (!tree->root)
-		TREE_ERROR_CHECK(TREE_EXPRESSION_SYNTAX_ERROR);
+		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
 
 	BINARY_TREE_GRAPH_DUMP(tree, "ReadProgram", NULL, id_name_table);
 
 	return TREE_NO_ERROR;
+}
+
+Node_t* LanguageSyntaxError(Lexer* lexer, size_t* pc) {
+
+	if (*pc > lexer->size) {
+		for (size_t i = 0; i < lexer->buffer_size - 1; i++)
+			printf("%c", lexer->buffer[i]);
+		printf(" " RED("<---") "\n");
+		if (fclose(stdout)) {}
+		return NULL;
+	}
+
+	int new_row_flag = 0;
+	int seq_op_flag = 0;
+	size_t j = 0;
+	int k = 2;
+	if ((*pc) > 2) {
+		while (lexer->tokens[(*pc) - 2].index + j != lexer->tokens[(*pc)].index) {
+			if (lexer->buffer[lexer->tokens[(*pc) - 2].index + j] == '\n') {
+				new_row_flag = 1;
+				break;
+			}
+			j++;
+		}
+		while (k > 0) {
+			if (lexer->tokens[((int)(*pc) - k)].data.val_key_word == SEQUENTIAL_OP) {
+				seq_op_flag = 1;
+				break;
+			}
+			k--;
+		}
+	}
+
+	if (new_row_flag && !seq_op_flag) {
+		for (size_t i = 0; i < lexer->buffer_size; i++) {
+
+			if (lexer->tokens[*pc - 2].index == i) {
+				while (lexer->buffer[i] != '\n')
+					printf("%c", lexer->buffer[i++]);
+				printf(" " RED("<---") "\n");
+				continue;
+			}
+
+			printf("%c", lexer->buffer[i]);
+		}
+
+		if (fclose(stdout)) {}
+
+		return NULL;
+	}
+
+	for (size_t i = 0; i < lexer->buffer_size; i++) {
+
+		if (lexer->tokens[*pc].index == i) {
+			while (lexer->buffer[i] != '\n')
+				printf("%c", lexer->buffer[i++]);
+			printf(" " RED("<---") "\n");
+			continue;
+		}
+
+		printf("%c", lexer->buffer[i]);
+	}
+
+	if (fclose(stdout)) {}
+
+	return NULL;
 }

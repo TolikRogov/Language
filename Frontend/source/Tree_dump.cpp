@@ -31,32 +31,56 @@ BinaryTreeStatusCode BinaryTreeHtmlDumpStart() {
 	HTML_PRINTF("\t<body><tt><pre>\n");
 	HTML_PRINTF("\t\t\t\t\t\t\t\t\t\t\t<a class='head'>MEGA DUMP</a><br>\n");
 
-	HTML_PRINTF("\t<div class='dump'>\n");
-	HTML_PRINTF("\tColors meanings:<br> \n");
-	HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>unknown what <br> node</div>", color.unknown_what_node + 1, color.unknown_what_node_border + 1);
-	HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>keyword <br> node</div>", color.keyword_node + 1, color.keyword_node_border + 1);
-	HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>number <br> node</div>", color.number_node + 1, color.number_node_border + 1);
-	HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>pointed <br> node</div>", color.new_node + 1, color.new_node_border + 1);
-	HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>identifier <br> node</div>\n", color.identifier_node + 1, color.identifier_node_border + 1);
-	HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>function definition <br> node</div>", color.function_definition_node + 1, color.function_definition_node_border + 1);
-	HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>parameters <br> node</div>", color.parameters_node + 1, color.parameters_node_border + 1);
-	HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>var declaration <br> node</div>", color.var_declaration_node + 1, color.var_declaration_node_border + 1);
-	HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>call <br> node</div>\n", color.call_node + 1, color.call_node_border + 1);
-
-	HTML_PRINTF("\n\t\t\t<span style='color: %.7s'>&#11153; left subtree edge</span>", color.left_edge + 1);
-	HTML_PRINTF("\t\t\t<span style='color: %.7s'>&#11153; right subtree edge</span>", color.right_edge + 1);
-	HTML_PRINTF("\t\t\t<span style='color: %.7s'>&#11153; unknown what edge</span>", color.unknown_what_edge + 1);
-	HTML_PRINTF("\t</div>\n\n");
+	if (fclose(html_file))
+		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
 
 #undef HTML_PRINTF
 
-	if (fclose(html_file))
-		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
+	ColorLegendPrint();
+	KeyWordsTablePrint();
 
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode NameTablePrint(IdNameTable* id_name_table) {
+BinaryTreeStatusCode ColorLegendPrint() {
+
+	FILE* html_file = fopen(HTML_FILE_, "a");
+	if (!html_file)
+		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
+
+#define HTML_PRINTF(...) fprintf(html_file, __VA_ARGS__);
+#define COLORS_PRINTF(...) HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>%s</div>", __VA_ARGS__);
+
+	HTML_PRINTF("\t<div class='dump'>\n");
+	HTML_PRINTF("\tColors meanings:<br> \n");
+	COLORS_PRINTF(color.unknown_what_node + 1, color.unknown_what_node_border + 1, "unknown what <br> node");
+	COLORS_PRINTF(color.keyword_node + 1, color.keyword_node_border + 1, "keyword <br> node");
+	COLORS_PRINTF(color.number_node + 1, color.number_node_border + 1, "number <br> node");
+	COLORS_PRINTF(color.new_node + 1, color.new_node_border + 1, "pointed <br> node");
+	COLORS_PRINTF(color.identifier_node + 1, color.identifier_node_border + 1, "identifier <br> node");
+	HTML_PRINTF("\n");
+	COLORS_PRINTF(color.function_definition_node + 1, color.function_definition_node_border + 1, "function definition <br> node");
+	COLORS_PRINTF(color.parameters_node + 1, color.parameters_node_border + 1, "parameters <br> node");
+	COLORS_PRINTF(color.var_declaration_node + 1, color.var_declaration_node_border + 1, "var declaration <br> node");
+	COLORS_PRINTF(color.call_node + 1, color.call_node_border + 1, "call <br> node");
+	HTML_PRINTF("\n");
+
+#undef COLORS_PRINTF
+
+	HTML_PRINTF("\n\t\t\t<span style='color: %.7s'>&#11153; left subtree edge</span>", color.left_edge + 1);
+	HTML_PRINTF("\t\t\t<span style='color: %.7s'>&#11153; right subtree edge</span>", color.right_edge + 1);
+	HTML_PRINTF("\t\t\t<span style='color: %.7s'>&#11153; unknown what edge</span>", color.unknown_what_edge + 1);
+	HTML_PRINTF("\n\t</div>\n\n");
+
+	if (fclose(html_file))
+		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
+
+#undef HTML_PRINTF
+
+	return TREE_NO_ERROR;
+}
+
+BinaryTreeStatusCode KeyWordsTablePrint() {
 
 	FILE* html_file = fopen(HTML_FILE_, "a");
 	if (!html_file)
@@ -64,13 +88,13 @@ BinaryTreeStatusCode NameTablePrint(IdNameTable* id_name_table) {
 
 #define HTML_PRINTF(...) fprintf(html_file, __VA_ARGS__);
 
-	HTML_PRINTF("\t<table class='name_table'>\n");
-	HTML_PRINTF("\t\t<tr>\n\t\t\t<td>Number</td>\n\t\t\t<td>KeyWord</td>\n\t\t</tr>\n");
+	HTML_PRINTF("\t<div class='dump'>\n\tKeyWordsTable:\n\t\t<table class='name_table'>\n");
+	HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>Number</td>\n\t\t\t\t<td>KeyWord</td>\n\t\t\t</tr>\n");
 	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
-		HTML_PRINTF("\t\t<tr>\n\t\t\t<td>%d</td>\n\t\t\t<td>%s</td>\n\t\t</tr>\n",
+		HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>%d</td>\n\t\t\t\t<td>%s</td>\n\t\t\t</tr>\n",
 					keywords[i].num, keywords[i].string);
 	}
-	HTML_PRINTF("\t</table></div>\n\n");
+	HTML_PRINTF("\t\t</table>\n\t</div>\n\n");
 
 #undef HTML_PRINTF
 
@@ -366,6 +390,7 @@ BinaryTreeStatusCode NodeGraphDump(Node_t* cur_root, FILE* dot_file, DumpLogInfo
 	} while(0)
 
 	SPECIFIER_LABEL_PRINT(cur_root);
+	DOT_PRINTF("| TYPE: %s", GetNodeType(cur_root));
 	DOT_PRINTF("| { <left> Left\\n");
 	SPECIFIER_LABEL_PRINT(cur_root->left);
 	DOT_PRINTF("| Parent\\n");

@@ -102,6 +102,7 @@ Node_t* CreateNode(NodeType type, Data_t data, Node_t* left, Node_t* right, Node
 Node_t* FindTreeRoot(Node_t* node);
 BinaryTreeStatusCode SetNodeValue(Node_t* node, Data_t data);
 BinaryTreeStatusCode NodePrintData(Node_t* node);
+const char* GetNodeType(Node_t* node);
 BinaryTreeStatusCode ReplaceUnknownWhat(Node_t* node, Data_t data, NodeType type);
 
 const char* KeyWordsGetString(KeyWordNum key_word_number);

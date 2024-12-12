@@ -1,5 +1,7 @@
 z = y ^ (x - 10) + 1;
 if (x - 8 + 1) {
 	z = x + 1;
+	z = y + 9 - x + z;
+	x = 1.5 - 8 + 3 ^ 2;
 };
-x = z - 1;
+x = cos(sinus) - sin(hui);

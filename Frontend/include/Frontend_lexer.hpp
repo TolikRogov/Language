@@ -42,9 +42,11 @@ struct Token {
 
 struct Lexer {
 	Token* tokens;
-	char* buffer;
 	size_t capacity;
 	size_t size;
+
+	char* buffer;
+	size_t buffer_size;
 };
 
 const size_t LEXER_DEFAULT_CAPACITY = 4;

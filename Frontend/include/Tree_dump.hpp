@@ -32,5 +32,6 @@ BinaryTreeStatusCode BinaryTreeCssFile();
 BinaryTreeStatusCode BinaryTreeCreateDumpDir();
 BinaryTreeStatusCode BinaryTreeBashScript(Tree* tree, DumpLogInfo* dump_info);
 BinaryTreeStatusCode NodeGraphDump(Node_t* cur_root, FILE* dot_file, DumpLogInfo* dump_info, IdNameTable* id_name_table);
-BinaryTreeStatusCode NameTablePrint(IdNameTable* id_name_table);
+BinaryTreeStatusCode KeyWordsTablePrint();
+BinaryTreeStatusCode ColorLegendPrint();
 BinaryTreeStatusCode BinaryTreeGraphDump(Tree* tree, DumpLogInfo dump_info, IdNameTable* id_name_table);
