@@ -134,12 +134,18 @@ BinaryTreeStatusCode SetNodeValue(Node_t* node, Data_t data) {
 }
 
 const char* KeyWordsGetString(KeyWordNum key_word_number) {
-	return	keywords[key_word_number].string;
+
+	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
+		if (keywords[i].num == key_word_number)
+			return keywords[i].string;
+	}
+
+	return	RET_STRING(INVALID_KEY_WORD);
 }
 
 KeyWordNum KeyWordsGetKeyWordNum(const char* string) {
 
-	for (size_t i = 0; i < AMOUNT_OF_KEYWORDS; i++) {
+	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
 		if (StrCmp(string, keywords[i].string) == 0)
 			return keywords[i].num;
 	}

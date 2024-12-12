@@ -66,7 +66,7 @@ BinaryTreeStatusCode NameTablePrint(IdNameTable* id_name_table) {
 
 	HTML_PRINTF("\t<table class='name_table'>\n");
 	HTML_PRINTF("\t\t<tr>\n\t\t\t<td>Number</td>\n\t\t\t<td>KeyWord</td>\n\t\t</tr>\n");
-	for (size_t i = 0; i < AMOUNT_OF_KEYWORDS; i++) {
+	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
 		HTML_PRINTF("\t\t<tr>\n\t\t\t<td>%d</td>\n\t\t\t<td>%s</td>\n\t\t</tr>\n",
 					keywords[i].num, keywords[i].string);
 	}
