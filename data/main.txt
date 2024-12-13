@@ -1,7 +1,14 @@
-z = y ^ (x - 10) + 1;
-if (x - 8 + 1) {
-	z = x + 1;
-	z = y + 9 - x + z;
-	x = 1.5 - 8 + 3 ^ 2;
+double main() {
+
+	double x = 0;
+	double y = 0;
+	double result = sum(a, b);
+
+	return result;
 };
-x = cos(sinus) - sin(hui);
+
+double sum(double a, double b) {
+	double res = a + b;
+
+	return res;
+};

@@ -381,9 +381,19 @@ BinaryTreeStatusCode NodeGraphDump(Node_t* cur_root, FILE* dot_file, DumpLogInfo
 				break;																													\
 			}																															\
 			case KEYWORD: 				{ DOT_PRINTF("%s\\n%p ", KeyWordsGetString(node->data.val_key_word), node); break; }			\
-			case FUNCTION_DEFINITION: 	{ DOT_PRINTF("%s\\n%p ", id_name_table->data[node->data.val_func_def].string, node); break; }	\
+			case FUNCTION_DEFINITION: { 																								\
+				PrintNString(dot_file, id_name_table->data[node->data.val_func_def].string, 											 \
+							id_name_table->data[node->data.val_func_def].length); 														\
+				DOT_PRINTF("\\n%p ", node); 																							\
+				break;																													\
+			}																															\
 			case PARAMETERS: 			{ DOT_PRINTF("%s\\n%p ", "PARAMETERS", node); break; }											\
-			case VAR_DECLARATION: 		{ DOT_PRINTF("%s\\n%p ", id_name_table->data[node->data.val_decl_var].string, node); break; }	\
+			case VAR_DECLARATION: { 																									\
+				PrintNString(dot_file, id_name_table->data[node->data.val_decl_var].string, 											 \
+							id_name_table->data[node->data.val_decl_var].length); 														\
+				DOT_PRINTF("\\n%p ", node); 																							\
+				break;																													\
+			}																															\
 			case CALL: 					{ DOT_PRINTF("%s\\n%p ", "CALL", node); break; }												\
 			default: return TREE_INVALID_TYPE;																							\
 		}																																\

@@ -18,7 +18,7 @@ int main() {
 	TREE_CTOR(&tree, &id_name_table);
 
 	CREATE_TREE_FROM_FILE(&tree, &id_name_table, &lexer);
-	//STANDARDIZE_TREE(&tree);
+	STANDARDIZE_TREE(&tree);
 
 	ID_NAME_TABLE_DTOR(&id_name_table);
 	TREE_DTOR(&tree);
