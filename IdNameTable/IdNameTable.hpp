@@ -19,13 +19,16 @@
 	TREE_ERROR_CHECK(tree_status);						\
 }
 
-const size_t DEFAULT_ID_NAME_TABLE_CAPACITY = 1;
-const size_t MAX_OPERATION_NAME_SIZE = 6;
-
 enum IdType {
 	ID_UNW = -1,
 	ID_VAR,
 	ID_FUNCTION,
+};
+
+struct ScopeVariables {
+	int* data;
+	size_t size;
+	size_t capacity;
 };
 
 struct Identifier  {
@@ -34,7 +37,7 @@ struct Identifier  {
 	char* string;
 	size_t length;
 	size_t define_status;
-	int* function_local_variables;
+	ScopeVariables scope_variables;
 };
 
 struct IdNameTable {
@@ -44,7 +47,9 @@ struct IdNameTable {
 	FILE* standard_file;
 };
 
-const size_t DEFAULT_COUNT_LOCAL_VARIABLES = 5;
+const size_t DEFAULT_COUNT_LOCAL_VARIABLES = 10;
+const size_t DEFAULT_ID_NAME_TABLE_CAPACITY = 1;
+const size_t MAX_OPERATION_NAME_SIZE = 6;
 
 BinaryTreeStatusCode IdNameTableRealloc(IdNameTable* var_name_table);
 BinaryTreeStatusCode IdNameTableCtor(IdNameTable* var_name_table);
@@ -53,3 +58,4 @@ BinaryTreeStatusCode PrintIdNameTable(IdNameTable* id_name_table);
 
 int IdNameTableGetIdNumber(IdNameTable* id_name_table, const char* string, size_t length);
 const char* IdNameTableGetIdTypeByType(IdType type);
+int FindLocalVariableInScope(Identifier* scope, Identifier* var);

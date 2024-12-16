@@ -112,16 +112,41 @@ BinaryTreeStatusCode IdNameTablePrint(IdNameTable* id_name_table) {
 		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
 
 #define HTML_PRINTF(...) fprintf(html_file, __VA_ARGS__);
-	HTML_PRINTF("\t<div class='dump'>\n\tIdNameTable:\n\t\t<table class='name_table'>\n");
-	HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>Number</td>\n\t\t\t\t<td>Type</td>\n\t\t\t\t<td>DefineStatus</td>\n\t\t\t\t<td>Length</td>\n\t\t\t\t<td>String</td>\n\t\t\t</tr>\n");
+	HTML_PRINTF("\t<div class='dump'>\n"
+				"\tIdNameTable:\n"
+				"\t\t<table class='name_table'>\n");
+	HTML_PRINTF("\t\t\t<tr>\n"
+				"\t\t\t\t<td>Number</td>\n"
+				"\t\t\t\t<td>Type</td>\n"
+				"\t\t\t\t<td>DefineStatus</td>\n"
+				"\t\t\t\t<td>Length</td>\n"
+				"\t\t\t\t<td>String</td>\n"
+				"\t\t\t\t<td>LocalVariables</td>\n"
+				"\t\t\t</tr>\n");
 	for (size_t i = 0; i < id_name_table->size; i++) {
-		HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>%d</td>\n\t\t\t\t<td>%s</td>\n\t\t\t\t<td>%zu</td>\n\t\t\t\t<td>%zu</td>\n",
+		HTML_PRINTF("\t\t\t<tr>\n"
+					"\t\t\t\t<td>%d</td>\n"
+					"\t\t\t\t<td>%s</td>\n"
+					"\t\t\t\t<td>%zu</td>\n"
+					"\t\t\t\t<td>%zu</td>\n",
 					id_name_table->data[i].num, IdNameTableGetIdTypeByType(id_name_table->data[i].type), id_name_table->data[i].define_status, id_name_table->data[i].length);
+
 		HTML_PRINTF("\t\t\t\t<td>");
 		PrintNString(html_file, id_name_table->data[i].string, id_name_table->data[i].length);
-		HTML_PRINTF("</td>\n\t\t\t</tr>\n");
+		HTML_PRINTF("</td>\n");
+
+		HTML_PRINTF("\t\t\t\t<td>");
+		for (size_t j = 0; j < id_name_table->data[i].scope_variables.size; j++) {
+			PrintNString(html_file, id_name_table->data[id_name_table->data[i].scope_variables.data[j]].string,
+								   id_name_table->data[id_name_table->data[i].scope_variables.data[j]].length);
+			HTML_PRINTF(" ");
+		}
+		HTML_PRINTF("</td>\n");
+
+		HTML_PRINTF("\t\t\t</tr>\n");
 	}
-	HTML_PRINTF("\t\t</table>\n\t</div>\n\n");
+	HTML_PRINTF("\t\t</table>\n"
+				"\t</div>\n\n");
 
 #undef HTML_PRINTF
 

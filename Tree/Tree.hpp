@@ -1,13 +1,11 @@
 #pragma once
 
-#include "Frontend_utils.hpp"
-#include "Frontend_defines.hpp"
+#include "Project_utils.hpp"
+#include "Tree_defines.hpp"
 
 typedef double Number_t;
 
 #include "KeyWords.hpp"
-
-#define RET_STRING(val) #val
 
 #define INIT_TREE(tree) Tree tree = {.info = {.name = #tree, .file_name = __FILE__, .line = __LINE__}};
 

@@ -1,7 +1,9 @@
+double global = 0;
+
 double main() {
 
-	double x = 0;
-	double y;
+	double x;
+	double y = 100;
 	double result = 0;
 
 	while (x + y) {
@@ -11,9 +13,7 @@ double main() {
 	return result;
 };
 
-double sum(double a, double b) {
-	double res = floor(sin(a) + cos(b) - sqrt(a + b));
-	return res;
+double sum(double x, double y) {
+	double result = floor(sin(x) + cos(y) - sqrt(x + y));
+	return result;
 };
-
-

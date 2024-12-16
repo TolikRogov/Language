@@ -11,6 +11,10 @@ set (RELEASE_FLAGS -std=c++17)
 set (DEBUG ON)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IdNameTable)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../KeyWords)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Utils)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Tree)
 
 if (${DEBUG})
 	add_compile_definitions(PRINT_DEBUG)

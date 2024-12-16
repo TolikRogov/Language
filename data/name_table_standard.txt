@@ -1,12 +1,10 @@
-8
+6
+global
 main
 x
 y
 result
 sum
-a
-b
-res
 
 3
 

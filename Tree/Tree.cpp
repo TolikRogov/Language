@@ -70,6 +70,9 @@ BinaryTreeStatusCode IsRootUnknownWhat(Node_t* root) {
 
 Node_t* FindTreeRoot(Node_t* node) {
 
+	if (!node)
+		return NULL;
+
 	if (!node->parent)
 		return node;
 
@@ -149,26 +152,6 @@ BinaryTreeStatusCode SetNodeValue(Node_t* node, Data_t data) {
 	}
 
 	return TREE_NO_ERROR;
-}
-
-const char* KeyWordsGetString(KeyWordNum key_word_number) {
-
-	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
-		if (keywords[i].num == key_word_number)
-			return keywords[i].string;
-	}
-
-	return	RET_STRING(INVALID_KEY_WORD);
-}
-
-KeyWordNum KeyWordsGetKeyWordNum(const char* string) {
-
-	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
-		if (StrCmp(string, keywords[i].string) == 0)
-			return keywords[i].num;
-	}
-
-	return INVALID_KEY_WORD;
 }
 
 BinaryTreeStatusCode NodeParentChecker(Node_t* node) {

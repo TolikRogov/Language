@@ -1,5 +1,18 @@
 #include "IdNameTable.hpp"
 
+int FindLocalVariableInScope(Identifier* scope, Identifier* var) {
+
+	if (!scope || !var)
+		return 0;
+
+	for (size_t i = 0; i < scope->scope_variables.size; i++) {
+		if (scope->scope_variables.data[i] == var->num)
+			return 1;
+	}
+
+	return 0;
+}
+
 BinaryTreeStatusCode IdNameTableRealloc(IdNameTable* id_name_table) {
 
 	if (id_name_table->capacity == id_name_table->size) {
@@ -14,6 +27,7 @@ BinaryTreeStatusCode IdNameTableRealloc(IdNameTable* id_name_table) {
 			id_name_table->data[i].string = NULL;
 			id_name_table->data[i].type = ID_UNW;
 			id_name_table->data[i].define_status = 0;
+			id_name_table->data[i].scope_variables = {};
 		}
 	}
 
@@ -38,9 +52,9 @@ BinaryTreeStatusCode IdNameTableDtor(IdNameTable* id_name_table) {
 	if (id_name_table->data) {
 
 		for (size_t i = 0; i < id_name_table->size; i++) {
-			if (id_name_table->data[i].function_local_variables) {
-				free(id_name_table->data[i].function_local_variables);
-				id_name_table->data[i].function_local_variables = NULL;
+			if (id_name_table->data[i].scope_variables.data) {
+				free(id_name_table->data[i].scope_variables.data);
+				id_name_table->data[i].scope_variables.data = NULL;
 			}
 		}
 

@@ -21,6 +21,7 @@ struct FrontedDescent {
 	Lexer* lexer;
 	size_t* pc;
 	IdNameTable* id_name_table;
+	int cur_scope;
 };
 
 BinaryTreeStatusCode CreateTreeFromFile(Tree* tree, IdNameTable* id_name_table, Lexer* lexer);
