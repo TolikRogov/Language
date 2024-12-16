@@ -61,12 +61,16 @@ Node_t* GetIdVariable(FrontedDescent* descent) {
 	printf("\n");
 #endif
 
-	if ((descent->cur_scope) < 0)
+	if ((descent->cur_scope) < 0) {
+		cur_id->global = 1;
 		return _ID(descent->lexer->tokens[(*(descent->pc))++].data.val_id);
+	}
 
 	if (descent->lexer->tokens[*(descent->pc) - 1].type == KEYWORD && descent->lexer->tokens[(*(descent->pc)) - 1].data.val_key_word == INIT_TYPE) {
-		if (!FindLocalVariableInScope(cur_scope, cur_id)) {
+		if (!FindLocalVariableInScope(cur_scope, cur_id) && cur_id->global == 0) {
 			cur_id->define_status = 1;
+
+			ScopeLocalVariablesRealloc(cur_scope);
 			cur_scope->scope_variables.data[cur_scope->scope_variables.size] = cur_id->num;
 			cur_scope->scope_variables.size++;
 		}
@@ -76,7 +80,7 @@ Node_t* GetIdVariable(FrontedDescent* descent) {
 		}
 	}
 
-	if (!FindLocalVariableInScope(cur_scope, cur_id)) {
+	if (!FindLocalVariableInScope(cur_scope, cur_id) && cur_id->global == 0) {
 		printf(RED("ERROR: using of undefined variable!")"\n");
 		LANGUAGE_SYNTAX_ERROR(descent);
 	}

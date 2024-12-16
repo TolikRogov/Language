@@ -1,5 +1,38 @@
 #include "IdNameTable.hpp"
 
+int CountOfGlobalVariables(IdNameTable* id_name_table) {
+
+	if (!id_name_table)
+		return -1;
+
+	int cnt = 0;
+	for (size_t i = 0; i < id_name_table->size; i++) {
+		if (id_name_table->data[i].global)
+			cnt++;
+	}
+
+	return cnt;
+}
+
+BinaryTreeStatusCode ScopeLocalVariablesRealloc(Identifier* scope) {
+
+	if (!scope)
+		return TREE_NULL_POINTER;
+
+	if (scope->scope_variables.capacity == scope->scope_variables.size) {
+		size_t old_capacity = scope->scope_variables.capacity;
+
+		scope->scope_variables.data = (int*)realloc(scope->scope_variables.data, (scope->scope_variables.capacity *= 2) * sizeof(int));
+		if (!scope->scope_variables.data)
+			return TREE_NULL_POINTER;
+
+		for (size_t i = old_capacity; i < scope->scope_variables.capacity; i++)
+			scope->scope_variables.data[i] = 0;
+	}
+
+	return TREE_NO_ERROR;
+}
+
 int FindLocalVariableInScope(Identifier* scope, Identifier* var) {
 
 	if (!scope || !var)
@@ -27,6 +60,7 @@ BinaryTreeStatusCode IdNameTableRealloc(IdNameTable* id_name_table) {
 			id_name_table->data[i].string = NULL;
 			id_name_table->data[i].type = ID_UNW;
 			id_name_table->data[i].define_status = 0;
+			id_name_table->data[i].global = 0;
 			id_name_table->data[i].scope_variables = {};
 		}
 	}

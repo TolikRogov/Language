@@ -119,6 +119,7 @@ BinaryTreeStatusCode IdNameTablePrint(IdNameTable* id_name_table) {
 				"\t\t\t\t<td>Number</td>\n"
 				"\t\t\t\t<td>Type</td>\n"
 				"\t\t\t\t<td>DefineStatus</td>\n"
+				"\t\t\t\t<td>Global</td>\n"
 				"\t\t\t\t<td>Length</td>\n"
 				"\t\t\t\t<td>String</td>\n"
 				"\t\t\t\t<td>LocalVariables</td>\n"
@@ -128,8 +129,10 @@ BinaryTreeStatusCode IdNameTablePrint(IdNameTable* id_name_table) {
 					"\t\t\t\t<td>%d</td>\n"
 					"\t\t\t\t<td>%s</td>\n"
 					"\t\t\t\t<td>%zu</td>\n"
+					"\t\t\t\t<td>%zu</td>\n"
 					"\t\t\t\t<td>%zu</td>\n",
-					id_name_table->data[i].num, IdNameTableGetIdTypeByType(id_name_table->data[i].type), id_name_table->data[i].define_status, id_name_table->data[i].length);
+					id_name_table->data[i].num, IdNameTableGetIdTypeByType(id_name_table->data[i].type), id_name_table->data[i].define_status,
+					id_name_table->data[i].global, id_name_table->data[i].length);
 
 		HTML_PRINTF("\t\t\t\t<td>");
 		PrintNString(html_file, id_name_table->data[i].string, id_name_table->data[i].length);

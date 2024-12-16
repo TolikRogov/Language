@@ -24,6 +24,27 @@ BinaryTreeStatusCode IdNameTableStandard(IdNameTable* id_name_table) {
 
 	fprintf(name_table_standard, "\n");
 
+	fprintf(name_table_standard, "-1 %d\n", CountOfGlobalVariables(id_name_table));
+	for (size_t i = 0; i < id_name_table->size; i++) {
+		if (id_name_table->data[i].global)
+			fprintf(name_table_standard, "%d %d\n", id_name_table->data[i].num, id_name_table->data[i].type);
+	}
+
+	fprintf(name_table_standard, "\n");
+
+	for (size_t i = 0; i < id_name_table->size; i++) {
+		if (id_name_table->data[i].type == ID_FUNCTION) {
+			fprintf(name_table_standard, "%zu %d\n", id_name_table->data[i].scope_variables.size, id_name_table->data[i].num);
+
+			for (size_t j = 0; j < id_name_table->data[i].scope_variables.size; j++) {
+				fprintf(name_table_standard, "%d %d\n", id_name_table->data[i].scope_variables.data[j],
+														id_name_table->data[id_name_table->data[i].scope_variables.data[j]].type);
+			}
+
+			fprintf(name_table_standard, "\n");
+		}
+	}
+
 	if (fclose(name_table_standard))
 		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
 

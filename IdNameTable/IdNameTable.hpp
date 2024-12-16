@@ -20,9 +20,9 @@
 }
 
 enum IdType {
-	ID_UNW = -1,
-	ID_VAR,
-	ID_FUNCTION,
+	ID_UNW		= -1,
+	ID_VAR 		= 1,
+	ID_FUNCTION = 2,
 };
 
 struct ScopeVariables {
@@ -37,6 +37,7 @@ struct Identifier  {
 	char* string;
 	size_t length;
 	size_t define_status;
+	size_t global;
 	ScopeVariables scope_variables;
 };
 
@@ -59,3 +60,5 @@ BinaryTreeStatusCode PrintIdNameTable(IdNameTable* id_name_table);
 int IdNameTableGetIdNumber(IdNameTable* id_name_table, const char* string, size_t length);
 const char* IdNameTableGetIdTypeByType(IdType type);
 int FindLocalVariableInScope(Identifier* scope, Identifier* var);
+BinaryTreeStatusCode ScopeLocalVariablesRealloc(Identifier* scope);
+int CountOfGlobalVariables(IdNameTable* id_name_table);
