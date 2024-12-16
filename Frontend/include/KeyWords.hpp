@@ -14,6 +14,7 @@ enum KeyWordNum {
 	ASSIGNMENT 		 	= 13,
 	SIN 			 	= 21,
 	COS  			 	= 22,
+	FLOOR				= 23,
 	ADD				 	= 24,
 	SUB   			 	= 25,
 	MUL				 	= 26,

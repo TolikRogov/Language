@@ -1,4 +1,5 @@
 #include "Tree_dump.hpp"
+#include "IdNameTable.hpp"
 #include "GraphUtils.hpp"
 
 static long AMOUNT_OF_LAST_SYMBOLS = 0;
@@ -93,6 +94,32 @@ BinaryTreeStatusCode KeyWordsTablePrint() {
 	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
 		HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>%d</td>\n\t\t\t\t<td>%s</td>\n\t\t\t</tr>\n",
 					keywords[i].num, keywords[i].string);
+	}
+	HTML_PRINTF("\t\t</table>\n\t</div>\n\n");
+
+#undef HTML_PRINTF
+
+	if (fclose(html_file))
+		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
+
+	return TREE_NO_ERROR;
+}
+
+BinaryTreeStatusCode IdNameTablePrint(IdNameTable* id_name_table) {
+
+	FILE* html_file = fopen(HTML_FILE_, "a");
+	if (!html_file)
+		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
+
+#define HTML_PRINTF(...) fprintf(html_file, __VA_ARGS__);
+	HTML_PRINTF("\t<div class='dump'>\n\tIdNameTable:\n\t\t<table class='name_table'>\n");
+	HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>Number</td>\n\t\t\t\t<td>Type</td>\n\t\t\t\t<td>DefineStatus</td>\n\t\t\t\t<td>Length</td>\n\t\t\t\t<td>String</td>\n\t\t\t</tr>\n");
+	for (size_t i = 0; i < id_name_table->size; i++) {
+		HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>%d</td>\n\t\t\t\t<td>%s</td>\n\t\t\t\t<td>%zu</td>\n\t\t\t\t<td>%zu</td>\n",
+					id_name_table->data[i].num, IdNameTableGetIdTypeByType(id_name_table->data[i].type), id_name_table->data[i].define_status, id_name_table->data[i].length);
+		HTML_PRINTF("\t\t\t\t<td>");
+		PrintNString(html_file, id_name_table->data[i].string, id_name_table->data[i].length);
+		HTML_PRINTF("</td>\n\t\t\t</tr>\n");
 	}
 	HTML_PRINTF("\t\t</table>\n\t</div>\n\n");
 

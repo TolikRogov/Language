@@ -170,3 +170,23 @@ KeyWordNum KeyWordsGetKeyWordNum(const char* string) {
 
 	return INVALID_KEY_WORD;
 }
+
+BinaryTreeStatusCode NodeParentChecker(Node_t* node) {
+
+	if (!node)
+		return TREE_NO_ERROR;
+
+	if (node->left)  {
+		if (!node->left->parent)
+			printf(RED("Node[%p] has no parent!")"\n", node->left);
+		NodeParentChecker(node->left);
+	}
+
+	if (node->right)  {
+		if (!node->right->parent)
+			printf(RED("Node[%p] has no parent!")"\n", node->right);
+		NodeParentChecker(node->right);
+	}
+
+	return TREE_NO_ERROR;
+}

@@ -1,77 +1,139 @@
 #include "Frontend_descent.hpp"
+#include "Frontend_standard.hpp"
+#include "Tree_dump.hpp"
 #include "Tree_dump.hpp"
 
-Node_t* GetGrammar(Lexer* lexer, size_t* pc);
-Node_t* GetFunctionDefinition(Lexer* lexer, size_t* pc);
-Node_t* GetDefinitionParameters(Lexer* lexer, size_t* pc);
-Node_t* GetStatement(Lexer* lexer, size_t* pc);
-Node_t* GetReturn(Lexer* lexer, size_t* pc);
-Node_t* GetVariableDeclaration(Lexer* lexer, size_t* pc);
-Node_t* GetAssignment(Lexer* lexer, size_t* pc);
-Node_t* GetIf(Lexer* lexer, size_t* pc);
-Node_t* GetExpression(Lexer* lexer, size_t* pc);
-Node_t* GetTerminator(Lexer* lexer, size_t* pc);
-Node_t* GetPriority(Lexer* lexer, size_t* pc);
-Node_t* GetPower(Lexer* lexer, size_t* pc);
-Node_t* GetCallParameters(Lexer* lexer, size_t* pc);
-Node_t* GetCall(Lexer* lexer, size_t* pc);
-Node_t* GetOperator(Lexer* lexer, size_t* pc);
-Node_t* GetIdentifier(Lexer* lexer, size_t* pc);
-Node_t* GetNumber(Lexer* lexer, size_t* pc);
+Node_t* GetGrammar(FrontedDescent* descent);
+Node_t* GetFunctionDefinition(FrontedDescent* descent);
+Node_t* GetDefinitionParameters(FrontedDescent* descent);
+Node_t* GetOperator(FrontedDescent* descent);
+Node_t* GetStatement(FrontedDescent* descent);
+Node_t* GetReturn(FrontedDescent* descent);
+Node_t* GetVariableDeclaration(FrontedDescent* descent);
+Node_t* GetAssignment(FrontedDescent* descent);
+Node_t* GetExpression(FrontedDescent* descent);
+Node_t* GetTerminator(FrontedDescent* descent);
+Node_t* GetPriority(FrontedDescent* descent);
+Node_t* GetPower(FrontedDescent* descent);
+Node_t* GetCallParameters(FrontedDescent* descent);
+Node_t* GetCall(FrontedDescent* descent);
+Node_t* GetOperation(FrontedDescent* descent);
+Node_t* GetIdVariable(FrontedDescent* descent);
+Node_t* GetIdFunction(FrontedDescent* descent);
+Node_t* GetNumber(FrontedDescent* descent);
 
-Node_t* GetNumber(Lexer* lexer, size_t* pc) {
+Node_t* GetNumber(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Number (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Number (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
-	if (lexer->tokens[*pc].type == NUMBER)
-		return _NUM(lexer->tokens[(*pc)++].data.val_num);
+	if (descent->lexer->tokens[*(descent->pc)].type == NUMBER)
+		return _NUM(descent->lexer->tokens[(*(descent->pc))++].data.val_num);
 	else
 		return NULL;
 
 }
 
-Node_t* GetIdentifier(Lexer* lexer, size_t* pc) {
+Node_t* GetIdVariable(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Identifier (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("IdVariable (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
-	if (lexer->tokens[*pc].type == IDENTIFIER)
-		return _ID(lexer->tokens[(*pc)++].data.val_id);
-	else
+	if (descent->lexer->tokens[*(descent->pc)].type != IDENTIFIER)
 		return NULL;
+
+	Identifier* cur_id = &descent->id_name_table->data[descent->lexer->tokens[(*(descent->pc))].data.val_id];
+
+	if (descent->lexer->tokens[(*(descent->pc)) + 1].data.val_key_word == OPEN_ROUND)
+		return NULL;
+
+	if (descent->lexer->tokens[(*(descent->pc)) - 1].data.val_key_word == INIT_TYPE) {
+		if (cur_id->define_status == 0)
+			cur_id->define_status = 1;
+		else {
+			printf(RED("ERROR: using of redefined variable!")"\n");
+			LANGUAGE_SYNTAX_ERROR(descent);
+		}
+	}
+
+	if (!cur_id->define_status) {
+		printf(RED("ERROR: using of undefined variable!")"\n");
+		LANGUAGE_SYNTAX_ERROR(descent);
+	}
+
+	return _ID(descent->lexer->tokens[(*(descent->pc))++].data.val_id);
 }
 
-Node_t* GetOperator(Lexer* lexer, size_t* pc) {
+Node_t* GetIdFunction(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Operator (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("IdFunction (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+#endif
+
+	if (descent->lexer->tokens[*(descent->pc)].type != IDENTIFIER)
+		return NULL;
+
+	Identifier* cur_id = &descent->id_name_table->data[descent->lexer->tokens[(*(descent->pc))].data.val_id];
+
+	if (descent->lexer->tokens[(*(descent->pc)) + 1].data.val_key_word != OPEN_ROUND)
+		return NULL;
+	cur_id->type = ID_FUNCTION;
+
+	if (descent->lexer->tokens[(*(descent->pc)) - 1].data.val_key_word != INIT_TYPE)
+		return _ID(descent->lexer->tokens[(*(descent->pc))++].data.val_id);
+
+	switch (cur_id->define_status) {
+		case 0: {
+			cur_id->define_status = 1;
+
+			cur_id->function_local_variables = (int*)calloc(DEFAULT_COUNT_LOCAL_VARIABLES, sizeof(int));
+			if (!cur_id->function_local_variables) {
+				TREE_ERROR_MESSAGE(TREE_ALLOC_ERROR);
+				return NULL;
+			}
+			break;
+		}
+		default: {
+			printf(RED("ERROR: using of redefined function!")"\n");
+		 	LANGUAGE_SYNTAX_ERROR(descent);
+		}
+	}
+
+	return _ID(descent->lexer->tokens[(*(descent->pc))++].data.val_id);
+}
+
+Node_t* GetOperation(FrontedDescent* descent) {
+
+#ifdef PRINT_DEBUG
+	printf("Operation (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
 	Node_t* node = NULL;
 
-	if (lexer->tokens[*pc].type == KEYWORD) {
-		KeyWordNum key_word = lexer->tokens[(*pc)++].data.val_key_word;
+	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD) {
+		KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))++].data.val_key_word;
 
-		if (lexer->tokens[*pc].data.val_key_word == OPEN_ROUND) {
-			(*pc)++;
-			node = GetExpression(lexer, pc);
+		if (descent->lexer->tokens[*(descent->pc)].data.val_key_word == OPEN_ROUND) {
+			(*(descent->pc))++;
+			node = GetExpression(descent);
 			if (!node)
-				LANGUAGE_SYNTAX_ERROR(lexer, pc);
+				LANGUAGE_SYNTAX_ERROR(descent);
 
-			if (lexer->tokens[*pc].data.val_key_word != CLOSE_ROUND)
-				LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			if (descent->lexer->tokens[*(descent->pc)].data.val_key_word != CLOSE_ROUND)
+				LANGUAGE_SYNTAX_ERROR(descent);
 
-			(*pc)++;
+			(*(descent->pc))++;
 			switch (key_word) {
-				case SIN:  return node = _SIN(node);
-				case COS:  return node = _COS(node);
-				case SQRT: return node = _SQRT(node);
+				case SIN:  	return node = _SIN(NULL, node);
+				case COS: 	return node = _COS(NULL, node);
+				case SQRT: 	return node = _SQRT(NULL, node);
+				case FLOOR: return node = _FLOOR(NULL, node);
 				default:   return NULL;
 			}
 		}
@@ -80,31 +142,32 @@ Node_t* GetOperator(Lexer* lexer, size_t* pc) {
 	return node;
 }
 
-Node_t* GetCallParameters(Lexer* lexer, size_t* pc) {
+Node_t* GetCallParameters(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("CallParameters (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("CallParameters (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
 #define TERMINALS_CHECKER(terminal) {									 \
-	if (lexer->tokens[(*pc)++].data.val_key_word != terminal)			\
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);								\
+	if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)			\
+		LANGUAGE_SYNTAX_ERROR(descent);				\
 }
-	Node_t* node = GetExpression(lexer, pc);
+	Node_t* node = GetExpression(descent);
 	if (!node)
 		return _COMMA_OP(NULL, NULL);
 	node = _COMMA_OP(node, NULL);
 
 	Node_t* prev_node = node;
-	while (lexer->tokens[(*pc)].data.val_key_word != CLOSE_ROUND) {
+	while (descent->lexer->tokens[(*(descent->pc))].data.val_key_word != CLOSE_ROUND) {
 		TERMINALS_CHECKER(COMMA_OP);
-		Node_t* node2 = GetExpression(lexer, pc);
+		Node_t* node2 = GetExpression(descent);
 		if (!node2)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			LANGUAGE_SYNTAX_ERROR(descent);
 
 		node2 = _COMMA_OP(node2, NULL);
 		prev_node->right = node2;
+		node2->parent =  prev_node;
 		prev_node = node2;
 	}
 
@@ -113,50 +176,52 @@ Node_t* GetCallParameters(Lexer* lexer, size_t* pc) {
 	return node;
 }
 
-Node_t* GetCall(Lexer* lexer, size_t* pc) {
+Node_t* GetCall(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Call (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Call (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
 #define TERMINALS_CHECKER(terminal) {									 \
-	if (lexer->tokens[(*pc)++].data.val_key_word != terminal)			\
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);								\
+	if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)			\
+		LANGUAGE_SYNTAX_ERROR(descent);				\
 }
 
-	Node_t* node = GetIdentifier(lexer, pc);
+	Node_t* node = GetIdFunction(descent);
 	if (!node)
 		return NULL;
 
 	TERMINALS_CHECKER(OPEN_ROUND);
 
-	Node_t* node2 = GetCallParameters(lexer, pc);
+	Node_t* node2 = GetCallParameters(descent);
 	if (!node2)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 	node2 = _PARAMETERS(node2, NULL);
+
+	TERMINALS_CHECKER(CLOSE_ROUND);
 
 #undef TERMINALS_CHECKER
 
 	return node = _CALL(node2, node);
 }
 
-Node_t* GetPower(Lexer* lexer, size_t* pc) {
+Node_t* GetPower(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Power (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Power (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
-	Node_t* node1 = GetPriority(lexer, pc);
+	Node_t* node1 = GetPriority(descent);
 	if (!node1)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 
-	while (lexer->tokens[*pc].data.val_key_word == POW) {
-		(*pc)++;
-		Node_t* node2 = GetPriority(lexer, pc);
+	while (descent->lexer->tokens[*(descent->pc)].data.val_key_word == POW) {
+		(*(descent->pc))++;
+		Node_t* node2 = GetPriority(descent);
 		if (!node2)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			LANGUAGE_SYNTAX_ERROR(descent);
 
 		node1 = _POW(node1, node2);
 	}
@@ -164,58 +229,58 @@ Node_t* GetPower(Lexer* lexer, size_t* pc) {
 	return node1;
 }
 
-Node_t* GetPriority(Lexer* lexer, size_t* pc) {
+Node_t* GetPriority(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Priority (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Priority (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
 	Node_t* node = NULL;
 
-	if (lexer->tokens[*pc].data.val_key_word == OPEN_ROUND) {
-		(*pc)++;
-		node = GetExpression(lexer, pc);
+	if (descent->lexer->tokens[*(descent->pc)].data.val_key_word == OPEN_ROUND) {
+		(*(descent->pc))++;
+		node = GetExpression(descent);
 		if (!node)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			LANGUAGE_SYNTAX_ERROR(descent);
 
-		if (lexer->tokens[*pc].data.val_key_word != CLOSE_ROUND)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		if (descent->lexer->tokens[*(descent->pc)].data.val_key_word != CLOSE_ROUND)
+			LANGUAGE_SYNTAX_ERROR(descent);
 
-		(*pc)++;
+		(*(descent->pc))++;
 		return node;
 	}
-	if ((node = GetNumber(lexer, pc)) != NULL)
+	if ((node = GetNumber(descent)) != NULL)
 		return node;
 
-	if ((node = GetIdentifier(lexer, pc)) != NULL)
+	if ((node = GetIdVariable(descent)) != NULL)
 		return node;
 
-	if ((node = GetOperator(lexer, pc)) != NULL)
+	if ((node = GetOperation(descent)) != NULL)
 		return node;
 
-	if ((node = GetCall(lexer, pc)) != NULL)
+	if ((node = GetCall(descent)) != NULL)
 		return node;
 
 	return NULL;
 }
 
-Node_t* GetTerminator(Lexer* lexer, size_t* pc) {
+Node_t* GetTerminator(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Terminator (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Terminator (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
-	Node_t* node1 = GetPower(lexer, pc);
+	Node_t* node1 = GetPower(descent);
 	if (!node1)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 
-	while (lexer->tokens[*pc].data.val_key_word == MUL || lexer->tokens[*pc].data.val_key_word == DIV) {
-		KeyWordNum key_word = lexer->tokens[(*pc)++].data.val_key_word;
-		Node_t* node2 = GetPower(lexer, pc);
+	while (descent->lexer->tokens[*(descent->pc)].data.val_key_word == MUL || descent->lexer->tokens[*(descent->pc)].data.val_key_word == DIV) {
+		KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))++].data.val_key_word;
+		Node_t* node2 = GetPower(descent);
 		if (!node2)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			LANGUAGE_SYNTAX_ERROR(descent);
 
 		if (key_word == MUL)
 			node1 = _MUL(node1, node2);
@@ -226,22 +291,22 @@ Node_t* GetTerminator(Lexer* lexer, size_t* pc) {
 	return node1;
 }
 
-Node_t* GetExpression(Lexer* lexer, size_t* pc) {
+Node_t* GetExpression(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Expression (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Expression (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
-	Node_t* node1 = GetTerminator(lexer, pc);
+	Node_t* node1 = GetTerminator(descent);
 	if (!node1)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 
-	while (lexer->tokens[*pc].data.val_key_word == ADD || lexer->tokens[*pc].data.val_key_word == SUB) {
-		KeyWordNum key_word = lexer->tokens[(*pc)++].data.val_key_word;
-		Node_t* node2 = GetTerminator(lexer, pc);
+	while (descent->lexer->tokens[*(descent->pc)].data.val_key_word == ADD || descent->lexer->tokens[*(descent->pc)].data.val_key_word == SUB) {
+		KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))++].data.val_key_word;
+		Node_t* node2 = GetTerminator(descent);
 		if (!node2)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			LANGUAGE_SYNTAX_ERROR(descent);
 
 		if (key_word == ADD)
 			node1 = _ADD(node1, node2);
@@ -252,87 +317,89 @@ Node_t* GetExpression(Lexer* lexer, size_t* pc) {
 	return node1;
 }
 
-Node_t* GetAssignment(Lexer* lexer, size_t* pc) {
+Node_t* GetAssignment(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Assignment (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Assignment (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
-	Node_t* node = GetIdentifier(lexer, pc);
+	Node_t* node = GetIdVariable(descent);
 	if (!node)
 		return NULL;
 
-	if (lexer->tokens[(*pc)++].data.val_key_word != ASSIGNMENT)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+	if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != ASSIGNMENT)
+		LANGUAGE_SYNTAX_ERROR(descent);
 
-	Node_t* node2 = GetExpression(lexer, pc);
+	Node_t* node2 = GetExpression(descent);
 	if (!node2)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 
 	return node = _ASSIGNMENT(node, node2);
 }
 
-Node_t* GetVariableDeclaration(Lexer* lexer, size_t* pc) {
+Node_t* GetVariableDeclaration(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("VarDeclaration (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("VarDeclaration (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
-	if (lexer->tokens[(*pc)].data.val_key_word != INIT_TYPE)
+	if (descent->lexer->tokens[(*(descent->pc))].data.val_key_word != INIT_TYPE)
 		return NULL;
-	(*pc)++;
-	Node_t* node = GetIdentifier(lexer, pc);
+	(*(descent->pc))++;
+	Node_t* node = GetIdVariable(descent);
 	if (!node)
 		return NULL;
 
-	if (lexer->tokens[(*pc)++].data.val_key_word != ASSIGNMENT)
+	if (descent->lexer->tokens[(*(descent->pc))].data.val_key_word != ASSIGNMENT)
 		return node = _VAR_DEC(node->data.val_id, _INIT_TYPE(), node);
-
-	Node_t* node2 = GetExpression(lexer, pc);
+	(*(descent->pc))++;
+	Node_t* node2 = GetExpression(descent);
 	if (!node2)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 
 	return node = _VAR_DEC(node->data.val_id, _INIT_TYPE(), _ASSIGNMENT(node, node2));
 }
 
-Node_t* GetIf(Lexer* lexer, size_t* pc) {
+Node_t* GetStatement(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("If (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Statement (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
 #define TERMINALS_CHECKER(terminal) {									 \
-	if (lexer->tokens[(*pc)++].data.val_key_word != terminal)			\
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);								\
+	if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)			\
+		LANGUAGE_SYNTAX_ERROR(descent);				\
 }
 
-	if (lexer->tokens[(*pc)].data.val_key_word != IF)
+	if (descent->lexer->tokens[(*(descent->pc))].data.val_key_word != IF && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != WHILE)
 		return NULL;
-	(*pc)++;
-	TERMINALS_CHECKER(OPEN_ROUND);
-	Node_t* node = GetExpression(lexer, pc);
-	if (!node)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
 
+	KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))].data.val_key_word;
+	(*(descent->pc))++;
+
+	TERMINALS_CHECKER(OPEN_ROUND);
+	Node_t* node = GetExpression(descent);
+	if (!node)
+		LANGUAGE_SYNTAX_ERROR(descent);
 	TERMINALS_CHECKER(CLOSE_ROUND);
 
 	TERMINALS_CHECKER(OPEN_FIGURE);
-	Node_t* node2 = GetStatement(lexer, pc);
+	Node_t* node2 = GetOperator(descent);
 	if (!node2)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 
 	TERMINALS_CHECKER(SEQUENTIAL_OP)
 
 	node2 = _SEQUENTIAL_OP(node2, NULL);
 
 	Node_t* prev_node = node2;
-	while (lexer->tokens[(*pc)].data.val_key_word != CLOSE_FIGURE) {
-		Node_t* node3 = GetStatement(lexer, pc);
+	while (descent->lexer->tokens[(*(descent->pc))].data.val_key_word != CLOSE_FIGURE) {
+		Node_t* node3 = GetOperator(descent);
 		if (!node3)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			LANGUAGE_SYNTAX_ERROR(descent);
 
 		TERMINALS_CHECKER(SEQUENTIAL_OP);
 
@@ -346,80 +413,87 @@ Node_t* GetIf(Lexer* lexer, size_t* pc) {
 
 #undef TERMINAL_CHECKER
 
-	return node = _IF(node, node2);
+	if (key_word == IF)
+		return node = _IF(node, node2);
+
+	if (key_word == WHILE)
+		return node = _WHILE(node, node2);
+
+	return NULL;
 }
 
-Node_t* GetReturn(Lexer* lexer, size_t* pc) {
+Node_t* GetReturn(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Return (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Return (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
-	if (lexer->tokens[(*pc)].data.val_key_word != RETURN)
+	if (descent->lexer->tokens[(*(descent->pc))].data.val_key_word != RETURN)
 		return NULL;
-	(*pc)++;
+	(*(descent->pc))++;
 
-	Node_t* node = GetExpression(lexer, pc);
+	Node_t* node = GetExpression(descent);
 	if (!node)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 
-	return node = _RETURN(node);
+	return node = _RETURN(NULL, node);
 }
 
-Node_t* GetStatement(Lexer* lexer, size_t* pc) {
+Node_t* GetOperator(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Statement (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Operator (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
 	Node_t* node = NULL;
 
-	if ((node = GetAssignment(lexer, pc)) != NULL)
+	if ((node = GetAssignment(descent)) != NULL)
 		return node;
 
-	if ((node = GetIf(lexer, pc)) != NULL)
+	if ((node = GetStatement(descent)) != NULL)
 		return node;
 
-	if ((node = GetVariableDeclaration(lexer, pc)) != NULL)
+	if ((node = GetVariableDeclaration(descent)) != NULL)
 		return node;
 
-	if ((node = GetReturn(lexer, pc)) != NULL)
+	if ((node = GetReturn(descent)) != NULL)
 		return node;
 
 	return NULL;
 }
 
-Node_t* GetDefinitionParameters(Lexer* lexer, size_t* pc) {
+Node_t* GetDefinitionParameters(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("DefinitionParameters (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("DefinitionParameters (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
 #define TERMINALS_CHECKER(terminal) {									 \
-	if (lexer->tokens[(*pc)++].data.val_key_word != terminal)			\
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);								\
+	if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)			\
+		LANGUAGE_SYNTAX_ERROR(descent);				\
 }
-	if (lexer->tokens[(*pc)].data.val_key_word != INIT_TYPE)
+	if (descent->lexer->tokens[(*(descent->pc))].data.val_key_word != INIT_TYPE)
 		return _COMMA_OP(NULL, NULL);
-	(*pc)++;
-	Node_t* node = GetIdentifier(lexer, pc);
+	(*(descent->pc))++;
+	Node_t* node = GetIdVariable(descent);
 	if (!node)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 	node = _COMMA_OP(_VAR_DEC(node->data.val_id, _INIT_TYPE(), node), NULL);
 
 	Node_t* prev_node = node;
-	while (lexer->tokens[(*pc)].data.val_key_word != CLOSE_ROUND) {
+	while (descent->lexer->tokens[(*(descent->pc))].data.val_key_word != CLOSE_ROUND) {
 		TERMINALS_CHECKER(COMMA_OP);
 		TERMINALS_CHECKER(INIT_TYPE);
-		Node_t* node2 = GetIdentifier(lexer, pc);
+		Node_t* node2 = GetIdVariable(descent);
 		if (!node2)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			LANGUAGE_SYNTAX_ERROR(descent);
 
 		node2 = _COMMA_OP(_VAR_DEC(node2->data.val_id, _INIT_TYPE(), node2), NULL);
 		prev_node->right = node2;
+		node2->parent = prev_node;
 		prev_node = node2;
 	}
 
@@ -428,54 +502,55 @@ Node_t* GetDefinitionParameters(Lexer* lexer, size_t* pc) {
 	return node;
 }
 
-Node_t* GetFunctionDefinition(Lexer* lexer, size_t* pc) {
+Node_t* GetFunctionDefinition(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("FunctionDefinition (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("FunctionDefinition (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
 #define TERMINALS_CHECKER(terminal) {									 \
-	if (lexer->tokens[(*pc)++].data.val_key_word != terminal)			\
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);								\
+	if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)			\
+		LANGUAGE_SYNTAX_ERROR(descent);				\
 }
-	if (lexer->tokens[(*pc)++].data.val_key_word != INIT_TYPE)
+	if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != INIT_TYPE)
 		return NULL;
 
-	Node_t* node = GetIdentifier(lexer, pc);
+	Node_t* node = GetIdFunction(descent);
 	if (!node)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
-	node->type = FUNCTION_DEFINITION;
+		LANGUAGE_SYNTAX_ERROR(descent);
+
 	node = _FUNC_DEF(node->data.val_id, _INIT_TYPE(), NULL);
 
 	TERMINALS_CHECKER(OPEN_ROUND);
 
-	Node_t* node2 = GetDefinitionParameters(lexer, pc);
+	Node_t* node2 = GetDefinitionParameters(descent);
 	if (!node)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 	node2 = _PARAMETERS(node2, NULL);
 	node->right = node2;
+	node2->parent = node;
 
 	TERMINALS_CHECKER(CLOSE_ROUND);
 	TERMINALS_CHECKER(OPEN_FIGURE);
 
-	Node_t* node3 = GetStatement(lexer, pc);
+	Node_t* node3 = GetOperator(descent);
 	if (!node3)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 
-	if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+	if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != SEQUENTIAL_OP)
+		LANGUAGE_SYNTAX_ERROR(descent);
 
 	node3 = _SEQUENTIAL_OP(node3, NULL);
 
 	Node_t* prev_node = node3;
-	while (lexer->tokens[(*pc)].data.val_key_word != CLOSE_FIGURE) {
-		Node_t* node4 = GetStatement(lexer, pc);
+	while (descent->lexer->tokens[(*(descent->pc))].data.val_key_word != CLOSE_FIGURE) {
+		Node_t* node4 = GetOperator(descent);
 		if (!node4)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			LANGUAGE_SYNTAX_ERROR(descent);
 
-		if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != SEQUENTIAL_OP)
+			LANGUAGE_SYNTAX_ERROR(descent);
 
 		node4 = _SEQUENTIAL_OP(node4, NULL);
 		prev_node->right = node4;
@@ -484,6 +559,7 @@ Node_t* GetFunctionDefinition(Lexer* lexer, size_t* pc) {
 	}
 
 	node2->right = node3;
+	node3->parent = node2;
 
 	TERMINALS_CHECKER(CLOSE_FIGURE);
 
@@ -492,30 +568,30 @@ Node_t* GetFunctionDefinition(Lexer* lexer, size_t* pc) {
 	return node;
 }
 
-Node_t* GetGrammar(Lexer* lexer, size_t* pc) {
+Node_t* GetGrammar(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
-	printf("Grammar (%zu): ", *pc);
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
+	printf("Grammar (%zu): ", *(descent->pc));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
 #endif
 
-	Node_t* node = GetFunctionDefinition(lexer, pc);
+	Node_t* node = GetFunctionDefinition(descent);
 	if (!node)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		LANGUAGE_SYNTAX_ERROR(descent);
 
-	if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+	if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != SEQUENTIAL_OP)
+		LANGUAGE_SYNTAX_ERROR(descent);
 
 	node = _SEQUENTIAL_OP(node, NULL);
 
 	Node_t* prev_node = node;
-	while ((*pc) != lexer->size) {
-		Node_t* node2 = GetFunctionDefinition(lexer, pc);
+	while ((*(descent->pc)) != descent->lexer->size) {
+		Node_t* node2 = GetFunctionDefinition(descent);
 		if (!node2)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+			LANGUAGE_SYNTAX_ERROR(descent);
 
-		if (lexer->tokens[(*pc)++].data.val_key_word != SEQUENTIAL_OP)
-			LANGUAGE_SYNTAX_ERROR(lexer, pc);
+		if (descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != SEQUENTIAL_OP)
+			LANGUAGE_SYNTAX_ERROR(descent);
 
 		node2 = _SEQUENTIAL_OP(node2, NULL);
 		prev_node->right = node2;
@@ -523,8 +599,8 @@ Node_t* GetGrammar(Lexer* lexer, size_t* pc) {
 		prev_node = node2;
 	}
 
-	if ((*pc)++ != lexer->size)
-		LANGUAGE_SYNTAX_ERROR(lexer, pc);
+	if ((*(descent->pc))++ != descent->lexer->size)
+		LANGUAGE_SYNTAX_ERROR(descent);
 
 	return node;
 }
@@ -560,26 +636,30 @@ BinaryTreeStatusCode CreateTreeFromFile(Tree* tree, IdNameTable* id_name_table, 
 
 	lexer->buffer = buffer;
 	lexer->buffer_size = size;
+	size_t pc = 0;
+	FrontedDescent descent = {.lexer = lexer, .id_name_table = id_name_table, .pc = &pc};
 	LEXICAL_ANALYSIS(buffer, lexer, id_name_table, size);
 
-	size_t pc = 0;
-	tree->root = GetGrammar(lexer, &pc);
+	tree->root = GetGrammar(&descent);
 	if (!tree->root)
 		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
 
+	NodeParentChecker(tree->root);
+	NAME_TABLE_PRINT(id_name_table);
 	BINARY_TREE_GRAPH_DUMP(tree, "ReadProgram", NULL, id_name_table);
 
 	return TREE_NO_ERROR;
 }
 
-Node_t* LanguageSyntaxError(Lexer* lexer, size_t* pc) {
+Node_t* LanguageSyntaxError(FrontedDescent* descent) {
 
-	if (*pc > lexer->size) {
-		for (size_t i = 0; i < lexer->buffer_size - 1; i++)
-			printf("%c", lexer->buffer[i]);
+	printf(RED("Lexer token[%zu]: "), (*(descent->pc)));
+	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+
+	if (*(descent->pc) > descent->lexer->size) {
+		for (size_t i = 0; i < descent->lexer->buffer_size - 1; i++)
+			printf("%c", descent->lexer->buffer[i]);
 		printf(" " RED("<---") "\n");
-		printf(RED("Lexer token[%zu]: "), (*pc));
-		PrintTokenValueGrammar(&lexer->tokens[*pc]);
 		if (fclose(stdout)) {}
 		return NULL;
 	}
@@ -588,16 +668,16 @@ Node_t* LanguageSyntaxError(Lexer* lexer, size_t* pc) {
 	int seq_op_flag = 0;
 	size_t j = 0;
 	int k = 2;
-	if ((*pc) > 2) {
-		while (lexer->tokens[(*pc) - 2].index + j != lexer->tokens[(*pc)].index) {
-			if (lexer->buffer[lexer->tokens[(*pc) - 2].index + j] == '\n') {
+	if ((*(descent->pc)) > 2) {
+		while (descent->lexer->tokens[(*(descent->pc)) - 2].index + j != descent->lexer->tokens[(*(descent->pc))].index) {
+			if (descent->lexer->buffer[descent->lexer->tokens[(*(descent->pc)) - 2].index + j] == '\n') {
 				new_row_flag = 1;
 				break;
 			}
 			j++;
 		}
 		while (k > 0) {
-			if (lexer->tokens[((int)(*pc) - k)].data.val_key_word == SEQUENTIAL_OP) {
+			if (descent->lexer->tokens[((int)(*(descent->pc)) - k)].data.val_key_word == SEQUENTIAL_OP) {
 				seq_op_flag = 1;
 				break;
 			}
@@ -606,38 +686,33 @@ Node_t* LanguageSyntaxError(Lexer* lexer, size_t* pc) {
 	}
 
 	if (new_row_flag && !seq_op_flag) {
-		for (size_t i = 0; i < lexer->buffer_size; i++) {
+		for (size_t i = 0; i < descent->lexer->buffer_size; i++) {
 
-			if (lexer->tokens[*pc - 2].index == i) {
-				while (lexer->buffer[i] != '\n')
-					printf("%c", lexer->buffer[i++]);
+			if (descent->lexer->tokens[*(descent->pc) - 2].index == i) {
+				while (descent->lexer->buffer[i] != '\n')
+					printf("%c", descent->lexer->buffer[i++]);
 				printf(" " RED("<---") "\n");
 				continue;
 			}
 
-			printf("%c", lexer->buffer[i]);
+			printf("%c", descent->lexer->buffer[i]);
 		}
-		printf(RED("Lexer token[%zu]: "), (*pc));
-		PrintTokenValueGrammar(&lexer->tokens[*pc]);
 		if (fclose(stdout)) {}
-
 		return NULL;
 	}
 
-	for (size_t i = 0; i < lexer->buffer_size; i++) {
+	for (size_t i = 0; i < descent->lexer->buffer_size; i++) {
 
-		if (lexer->tokens[*pc].index == i) {
-			while (lexer->buffer[i] != '\n')
-				printf("%c", lexer->buffer[i++]);
+		if (descent->lexer->tokens[*(descent->pc)].index == i) {
+			while (descent->lexer->buffer[i] != '\n')
+				printf("%c", descent->lexer->buffer[i++]);
 			printf(" " RED("<---") "\n");
 			continue;
 		}
 
-		printf("%c", lexer->buffer[i]);
+		printf("%c", descent->lexer->buffer[i]);
 	}
-	printf(RED("Lexer token[%zu]: "), (*pc));
-	PrintTokenValueGrammar(&lexer->tokens[*pc]);
-	if (fclose(stdout)) {}
 
+	if (fclose(stdout)) {}
 	return NULL;
 }

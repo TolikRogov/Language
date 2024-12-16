@@ -1,14 +1,19 @@
 double main() {
 
 	double x = 0;
-	double y = 0;
-	double result = sum(a, b);
+	double y;
+	double result = 0;
+
+	while (x + y) {
+		result = sum(x, y);
+	};
 
 	return result;
 };
 
 double sum(double a, double b) {
-	double res = a + b;
-
+	double res = floor(sin(a) + cos(b) - sqrt(a + b));
 	return res;
 };
+
+

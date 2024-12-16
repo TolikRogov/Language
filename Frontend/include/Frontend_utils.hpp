@@ -30,7 +30,7 @@
 }
 
 #define TREE_ERROR_MESSAGE(error) {																				 	 \
-	fprintf(stderr, "\n\n" RED("Error (code %d): %s, ") YELLOW("File: %s, Function: %s, Line: %d\n\n"),   			\
+	fprintf(stderr, "\n" RED("Error (code %d): %s, ") YELLOW("File: %s, Function: %s, Line: %d\n\n"),   			\
 				error, BinaryTreeErrorsMessenger(error), __FILE__, __PRETTY_FUNCTION__, __LINE__);					\
 	if (fclose(stderr)) {} 																							\
 }

@@ -21,6 +21,11 @@
 	#define UNKNOWN_WHAT_(...) NULL
 #endif
 
+#define NAME_TABLE_PRINT(id_name_table) {				 \
+	tree_status = IdNameTablePrint(id_name_table); 		\
+	TREE_ERROR_CHECK(tree_status);						\
+}
+
 struct DumpLogInfo {
 	const char* file;
 	const size_t line;
@@ -33,5 +38,6 @@ BinaryTreeStatusCode BinaryTreeCreateDumpDir();
 BinaryTreeStatusCode BinaryTreeBashScript(Tree* tree, DumpLogInfo* dump_info);
 BinaryTreeStatusCode NodeGraphDump(Node_t* cur_root, FILE* dot_file, DumpLogInfo* dump_info, IdNameTable* id_name_table);
 BinaryTreeStatusCode KeyWordsTablePrint();
+BinaryTreeStatusCode IdNameTablePrint(IdNameTable* id_name_table);
 BinaryTreeStatusCode ColorLegendPrint();
 BinaryTreeStatusCode BinaryTreeGraphDump(Tree* tree, DumpLogInfo dump_info, IdNameTable* id_name_table);

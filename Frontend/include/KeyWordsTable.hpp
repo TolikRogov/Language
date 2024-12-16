@@ -14,6 +14,7 @@ KeyWord keywords[] = {
  	{ .num = ASSIGNMENT, 	.string = "=", 	    	},
  	{ .num = SIN, 			.string = "sin", 	    },
  	{ .num = COS, 			.string = "cos", 	    },
+	{ .num = FLOOR,			.string = "floor",		 },
  	{ .num = ADD, 			.string = "+", 	    	},
  	{ .num = SUB, 			.string = "-", 	    	},
  	{ .num = MUL, 			.string = "*", 	    	},

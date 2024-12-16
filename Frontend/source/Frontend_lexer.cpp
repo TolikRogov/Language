@@ -93,23 +93,24 @@ static const char* GetTokenStringType(NodeType type) {
 	}
 }
 
-static BinaryTreeStatusCode PrintTokenValue(Token* token, IdNameTable* id_name_table) {
-
-	printf(" value - ");
+BinaryTreeStatusCode PrintTokenValue(Token* token, IdNameTable* id_name_table) {
 
 	switch (token->type) {
 		case NUMBER: 				{ printf(GREEN("%lg"), token->data.val_num); break; }
 		case IDENTIFIER: {
-			PrintNString(stdout, id_name_table->data[token->data.val_id].string, id_name_table->data[token->data.val_id].length);
+			for (size_t i = 0; i < id_name_table->data[token->data.val_id].length; i++)
+				printf(GREEN("%c"), id_name_table->data[token->data.val_id].string[i]);
 			break;
 		}
 		case KEYWORD:  				{ printf(GREEN("%s"), KeyWordsGetString(token->data.val_key_word)); break; }
 		case FUNCTION_DEFINITION: {
-			PrintNString(stdout, id_name_table->data[token->data.val_func_def].string, id_name_table->data[token->data.val_func_def].length);
+			for (size_t j = 0; j < id_name_table->data[token->data.val_func_def].length; j++)
+				printf(GREEN("%c"), id_name_table->data[token->data.val_func_def].string[j]);
 			break;
 		}
 		case VAR_DECLARATION: {
-			PrintNString(stdout, id_name_table->data[token->data.val_decl_var].string, id_name_table->data[token->data.val_decl_var].length);
+			for (size_t j = 0; j < id_name_table->data[token->data.val_decl_var].length; j++)
+				printf(GREEN("%c"), id_name_table->data[token->data.val_decl_var].string[j]);
 			break;
 		}
 		case PARAMETERS:		 	{ printf(GREEN("%s"), RET_STRING(PARAMETERS)); break; }
@@ -120,6 +121,7 @@ static BinaryTreeStatusCode PrintTokenValue(Token* token, IdNameTable* id_name_t
 	return TREE_NO_ERROR;
 }
 
+//FIXME
 BinaryTreeStatusCode PrintTokenValueGrammar(Token* token) {
 	switch (token->type) {
 		case NUMBER: 				{ printf(GREEN("%lg"), token->data.val_num); break; }
@@ -146,7 +148,8 @@ BinaryTreeStatusCode PrintLexer(Lexer* lexer, IdNameTable* id_name_table) {
 	printf(BLUE("Lexer size:") " " GREEN("%zu") "\n", lexer->size);
 
 	for (size_t i = 0; i < lexer->capacity; i++) {
-		printf(BLUE("Lexer token[%zu]:") " type - " GREEN("%s") " index - " GREEN("%zu"), i, GetTokenStringType(lexer->tokens[i].type), lexer->tokens[i].index);
+		printf(BLUE("Lexer token[%.2zu]:") " type - " GREEN("%10s") " index - " GREEN("%5zu"), i, GetTokenStringType(lexer->tokens[i].type), lexer->tokens[i].index);
+		printf(" value - ");
 		PrintTokenValue(&lexer->tokens[i], id_name_table);
 	}
 
@@ -163,11 +166,6 @@ BinaryTreeStatusCode LexicalAnalysis(char* buffer, Lexer* lexer, IdNameTable* id
 
 	while (true) {
 		LEXER_REALLOC(lexer);
-
-#ifdef PRINT_DEBUG
-		PrintLexer(lexer, id_name_table);
-		PrintIdNameTable(id_name_table);
-#endif
 
 		SKIP_EXTRA(buffer, &token_start, size);
 
@@ -242,7 +240,7 @@ BinaryTreeStatusCode LexicalAnalysis(char* buffer, Lexer* lexer, IdNameTable* id
 		ID_NAME_TABLE_REALLOC(id_name_table);
 
 		id_name_table->data[id_name_table->size].num = (int)id_name_table->size;
-		id_name_table->data[id_name_table->size].value = 0;
+		id_name_table->data[id_name_table->size].define_status = 0;
 		id_name_table->data[id_name_table->size].length = (size_t)(token_end - token_start);
 		id_name_table->data[id_name_table->size].string = buffer + token_start;
 		id_name_table->data[id_name_table->size].type = ID_VAR;
@@ -253,6 +251,11 @@ BinaryTreeStatusCode LexicalAnalysis(char* buffer, Lexer* lexer, IdNameTable* id
 		lexer->size++;
 		token_start = token_end;
 	}
+
+#ifdef PRINT_DEBUG
+		PrintLexer(lexer, id_name_table);
+		PrintIdNameTable(id_name_table);
+#endif
 
 	return TREE_NO_ERROR;
 }

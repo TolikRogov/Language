@@ -33,23 +33,23 @@ struct Identifier  {
 	IdType type;
 	char* string;
 	size_t length;
-	Number_t value;
+	size_t define_status;
+	int* function_local_variables;
 };
 
 struct IdNameTable {
 	Identifier* data;
 	size_t capacity;
 	size_t size;
+	FILE* standard_file;
 };
+
+const size_t DEFAULT_COUNT_LOCAL_VARIABLES = 5;
 
 BinaryTreeStatusCode IdNameTableRealloc(IdNameTable* var_name_table);
 BinaryTreeStatusCode IdNameTableCtor(IdNameTable* var_name_table);
 BinaryTreeStatusCode IdNameTableDtor(IdNameTable* var_name_table);
-
-BinaryTreeStatusCode ResetVariables(IdNameTable* id_name_table);
 BinaryTreeStatusCode PrintIdNameTable(IdNameTable* id_name_table);
 
-int IdNameTableGetDiffVarNumber(IdNameTable* var_name_table, int old_var_ret);
 int IdNameTableGetIdNumber(IdNameTable* id_name_table, const char* string, size_t length);
-size_t IdNameTableGetMaxIdLength(IdNameTable* id_name_table);
-const char* IdNameTableGetIdType(IdNameTable* id_name_table, IdType type);
+const char* IdNameTableGetIdTypeByType(IdType type);

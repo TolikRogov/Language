@@ -1,4 +1,34 @@
 #include "Frontend_standard.hpp"
+#include "IdNameTable.hpp"
+
+BinaryTreeStatusCode IdNameTableStandard(IdNameTable* id_name_table) {
+
+	FILE* name_table_standard = fopen(FRONT_DATA_DIR_ NAME_TABLE_STANDARD_FILE_, "w");
+	if (!name_table_standard)
+		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
+
+	fprintf(name_table_standard, "%zu\n", id_name_table->size);
+	for (size_t i = 0; i < id_name_table->size; i++){
+		PrintNString(name_table_standard, id_name_table->data[i].string, id_name_table->data[i].length);
+		fprintf(name_table_standard, "\n");
+	}
+
+	fprintf(name_table_standard, "\n");
+
+	size_t function_count = 0;
+	for (size_t i = 0; i < id_name_table->size; i++) {
+		if (id_name_table->data[i].type == ID_FUNCTION)
+			function_count++;
+	}
+	fprintf(name_table_standard, "%zu\n", function_count + 1);
+
+	fprintf(name_table_standard, "\n");
+
+	if (fclose(name_table_standard))
+		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
+
+	return TREE_NO_ERROR;
+}
 
 BinaryTreeStatusCode TreeStandard(Tree* tree) {
 
