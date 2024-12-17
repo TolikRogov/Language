@@ -50,7 +50,6 @@ struct IdNameTable {
 
 const size_t DEFAULT_COUNT_LOCAL_VARIABLES = 10;
 const size_t DEFAULT_ID_NAME_TABLE_CAPACITY = 1;
-const size_t MAX_OPERATION_NAME_SIZE = 6;
 
 BinaryTreeStatusCode IdNameTableRealloc(IdNameTable* var_name_table);
 BinaryTreeStatusCode IdNameTableCtor(IdNameTable* var_name_table);

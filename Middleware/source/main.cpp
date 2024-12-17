@@ -1,4 +1,4 @@
-#include "Middleware.hpp"
+#include "Middleware_reader.hpp"
 #include "KeyWordsTable.hpp"
 
 int main() {
@@ -8,11 +8,13 @@ int main() {
 	INIT_ID_NAME_TABLE(id_name_table);
 	ID_NAME_TABLE_CTOR(&id_name_table);
 
+	INIT_LEXER(lexer);
+	LEXER_CTOR(&lexer);
+
 	INIT_TREE(tree);
 	TREE_CTOR(&tree, &id_name_table);
 
-	tree.root = _MUL(_NUM(5), _NUM(6));
-	BINARY_TREE_GRAPH_DUMP(&tree, "Test", NULL, &id_name_table);
+	ReadTreeStandard(&tree, &id_name_table, &lexer);
 
 	TREE_DTOR(&tree);
 	OPEN_HTML_FILE();

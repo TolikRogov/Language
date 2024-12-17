@@ -15,6 +15,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IdNameTable)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../KeyWords)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Utils)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Tree)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Lexer)
 
 if (${DEBUG})
 	add_compile_definitions(PRINT_DEBUG)

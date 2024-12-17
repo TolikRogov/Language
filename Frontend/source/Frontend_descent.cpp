@@ -691,12 +691,12 @@ BinaryTreeStatusCode CreateTreeFromFile(Tree* tree, IdNameTable* id_name_table, 
 
 	BinaryTreeStatusCode tree_status = TREE_NO_ERROR;
 
-	FILE* prog_file = fopen(FRONT_PROG_FILE_, "r");
+	FILE* prog_file = fopen(PROG_FILE_, "r");
 	if (!prog_file)
 		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
 
 	struct stat file_info = {};
-	stat(FRONT_PROG_FILE_, &file_info);
+	stat(PROG_FILE_, &file_info);
 
 	size_t size = (size_t)file_info.st_size;
 	char* buffer = (char*)calloc(size, sizeof(char));

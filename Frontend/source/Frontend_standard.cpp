@@ -3,7 +3,7 @@
 
 BinaryTreeStatusCode IdNameTableStandard(IdNameTable* id_name_table) {
 
-	FILE* name_table_standard = fopen(FRONT_DATA_DIR_ NAME_TABLE_STANDARD_FILE_, "w");
+	FILE* name_table_standard = fopen(NAME_TABLE_STANDARD_FILE_, "w");
 	if (!name_table_standard)
 		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
 
@@ -55,7 +55,7 @@ BinaryTreeStatusCode TreeStandard(Tree* tree) {
 
 	BinaryTreeStatusCode tree_status = TREE_NO_ERROR;
 
-	FILE* tree_standard = fopen(FRONT_DATA_DIR_ TREE_STANDARD_FILE_, "w");
+	FILE* tree_standard = fopen(TREE_STANDARD_FILE_, "w");
 	if (!tree_standard)
 		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
 

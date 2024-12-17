@@ -1,6 +1,4 @@
-#include "Frontend_lexer.hpp"
-
-#define TOC '#'
+#include "Lexer.hpp"
 
 BinaryTreeStatusCode SkipExtra(const char* buffer, size_t* token_start, size_t size) {
 
