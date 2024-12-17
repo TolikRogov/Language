@@ -38,4 +38,7 @@ struct KeyWord {
 	const char* string;
 };
 
+const char* KeyWordsGetString(KeyWordNum key_word_number);
+KeyWordNum KeyWordsGetKeyWordNum(const char* string);
+
 extern KeyWord keywords[];

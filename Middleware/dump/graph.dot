@@ -1,0 +1,10 @@
+digraph {
+	fontname = "UbuntuMono";
+	bgcolor = "#DCDCDC";
+
+	node0x107a00ad0 [ shape = Mrecord; style = filled; fillcolor = "#F8E807"; color = "#B6AA05"; fontcolor = "#000000"; label = " { *\n0x107a00ad0 | TYPE: KEYWORD| { <left> Left\n5\n0x107a00b50 | Parent\nNONE\n0x0 | <right> Right\n6\n0x107a00b10 } } "; ];
+	node0x107a00ad0:<left> -> node0x107a00b50 [ style = "bold"; color = "#187AE8"; label = ""; ];
+	node0x107a00b50 [ shape = Mrecord; style = filled; fillcolor = "#BDEF9E"; color = "#74AF80"; fontcolor = "#000000"; label = " { 5\n0x107a00b50 | TYPE: NUMBER| { <left> Left\nNONE\n0x0 | Parent\n*\n0x107a00ad0 | <right> Right\nNONE\n0x0 } } "; ];
+	node0x107a00b10 [ shape = Mrecord; style = filled; fillcolor = "#BDEF9E"; color = "#74AF80"; fontcolor = "#000000"; label = " { 6\n0x107a00b10 | TYPE: NUMBER| { <left> Left\nNONE\n0x0 | Parent\n*\n0x107a00ad0 | <right> Right\nNONE\n0x0 } } "; ];
+	node0x107a00ad0:<right> -> node0x107a00b10 [ style = "bold"; color = "#48E818"; label = ""; ];
+}

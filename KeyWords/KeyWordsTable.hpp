@@ -28,4 +28,3 @@ KeyWord keywords[] = {
  	{ .num = BREAK, 		.string = "break", 	    },
  	{ .num = CONTINUE, 		.string = "continue", 	},
 	{ .num = AMOUNT_OF_KEYWORDS }};
-
