@@ -1,10 +1,10 @@
-double global = 0;
+double global = 4 + 2 - 1;
 
 double main() {
 
-	double x;
-	double y = 100;
-	double result = 0;
+	double x = 10 ^ 2;
+	double y = 8 - 8;
+	double result = 1 * x;
 
 	while (x + y) {
 		result = sum(x, y);

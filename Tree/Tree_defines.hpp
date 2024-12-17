@@ -2,7 +2,7 @@
 
 #define _NUM(val) 								CreateNode(NUMBER, 					{.val_num 		= val}, 			NULL, NULL,  NULL)
 #define _ID(id_num) 							CreateNode(IDENTIFIER, 				{.val_id  		= id_num}, 			NULL, NULL,  NULL)
-#define _KEYWORD(key_word_num)					CreateNode(KEYWORD,					{.val_key_word 	= key_word_num},	NULL, NULL,	 NULL)
+#define _KEYWORD(key_word_num, left, right)		CreateNode(KEYWORD,					{.val_key_word 	= key_word_num},	NULL, NULL,	 NULL)
 #define _FUNC_DEF(id_func_num, left, right) 	CreateNode(FUNCTION_DEFINITION, 	{.val_func_def  = id_func_num}, 	left, right, NULL)
 #define _PARAMETERS(left, right) 				CreateNode(PARAMETERS, 				{}, 								left, right, NULL)
 #define _VAR_DEC(var_id, left, right) 			CreateNode(VAR_DECLARATION, 		{.val_decl_var	= var_id}, 			left, right, NULL)
@@ -29,3 +29,10 @@
 #define _INPUT() 								CreateNode(KEYWORD,  				{.val_key_word = INPUT}, 			NULL, NULL,  NULL)
 #define _BREAK() 								CreateNode(KEYWORD,  				{.val_key_word = BREAK}, 			NULL, NULL,  NULL)
 #define _CONTINUE()								CreateNode(KEYWORD,  				{.val_key_word = CONTINUE}, 		NULL, NULL,  NULL)
+
+#define eR Eval(node->right)
+#define eL Eval(node->left)
+
+#define cL doCopySubtree(node->left)
+#define cR doCopySubtree(node->right)
+#define cP doCopySubtree(node)

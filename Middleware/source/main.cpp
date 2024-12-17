@@ -1,4 +1,5 @@
 #include "Middleware_reader.hpp"
+#include "Middleware_simple.hpp"
 #include "KeyWordsTable.hpp"
 
 int main() {
@@ -14,8 +15,9 @@ int main() {
 	INIT_TREE(tree);
 	TREE_CTOR(&tree, &id_name_table);
 
-	ReadNameTableStandard(&id_name_table);
-	ReadTreeStandard(&tree, &id_name_table, &lexer);
+	STANDARD_READER(&tree, &id_name_table, &lexer);
+	TREE_SIMPLIFICATION(&tree, &id_name_table);
+	STANDARDIZE(&tree);
 
 	TREE_DTOR(&tree);
 	ID_NAME_TABLE_DTOR(&id_name_table);

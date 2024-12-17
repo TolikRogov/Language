@@ -17,7 +17,7 @@ Node_t* GetNodeValue(Lexer* lexer, size_t* pc, IdNameTable* id_name_table) {
 	switch ((int)lexer->tokens[(*pc)++].data.val_num) {
 		case NUMBER: 					return _NUM(lexer->tokens[(*pc)++].data.val_num);
 		case IDENTIFIER: 				return _ID((size_t)lexer->tokens[(*pc)++].data.val_num);
-		case KEYWORD: 					return _KEYWORD((KeyWordNum)lexer->tokens[(*pc)++].data.val_num);
+		case KEYWORD: 					return _KEYWORD((KeyWordNum)lexer->tokens[(*pc)++].data.val_num, NULL, NULL);
 		case FUNCTION_DEFINITION: 		return _FUNC_DEF((size_t)lexer->tokens[(*pc)++].data.val_num, NULL, NULL);
 		case VAR_DECLARATION: 			return _VAR_DEC((size_t)lexer->tokens[(*pc)++].data.val_num, NULL, NULL);
 		case PARAMETERS: 				return _PARAMETERS(NULL, NULL);
@@ -254,7 +254,9 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 		}
 	}
 
+#ifdef PRINT_DEBUG
 	PrintIdNameTable(id_name_table);
+#endif
 
 	return TREE_NO_ERROR;
 }

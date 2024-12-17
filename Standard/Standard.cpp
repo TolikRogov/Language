@@ -1,5 +1,4 @@
-#include "Frontend_standard.hpp"
-#include "IdNameTable.hpp"
+#include "Standard.hpp"
 
 BinaryTreeStatusCode IdNameTableStandard(IdNameTable* id_name_table) {
 

@@ -30,6 +30,24 @@ BinaryTreeStatusCode TreeDtor(Node_t* node) {
 	return TREE_NO_ERROR;
 }
 
+Node_t* doCopySubtree(Node_t* node) {
+
+	if (!node)
+		return NULL;
+
+	switch (node->type) {
+		case NUMBER: 					return _NUM(node->data.val_num);
+		case IDENTIFIER: 				return _ID(node->data.val_id);
+		case FUNCTION_DEFINITION:		return _FUNC_DEF(node->data.val_func_def, cL, cR);
+		case PARAMETERS:				return _PARAMETERS(cL, cR);
+		case VAR_DECLARATION:			return _VAR_DEC(node->data.val_decl_var, cL, cR);
+		case CALL:						return _CALL(cL, cR);
+		case KEYWORD:					return _KEYWORD(node->data.val_key_word, cL, cR);
+		case UNW:
+		default: return NULL;
+	}
+}
+
 Node_t* CreateNode(NodeType type, Data_t data, Node_t* left, Node_t* right, Node_t* parent) {
 
 	Node_t* node = (Node_t*)calloc(1, sizeof(*node));

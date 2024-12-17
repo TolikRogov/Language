@@ -1,6 +1,5 @@
 #include "Frontend_descent.hpp"
-#include "Frontend_standard.hpp"
-#include "Tree_dump.hpp"
+#include "Standard.hpp"
 #include "Tree_dump.hpp"
 
 Node_t* GetGrammar(FrontedDescent* descent);
@@ -63,6 +62,7 @@ Node_t* GetIdVariable(FrontedDescent* descent) {
 
 	if ((descent->cur_scope) < 0) {
 		cur_id->global = 1;
+		cur_id->define_status = 1;
 		return _ID(descent->lexer->tokens[(*(descent->pc))++].data.val_id);
 	}
 
