@@ -139,12 +139,12 @@ BinaryTreeStatusCode PrintIdNameTable(IdNameTable* id_name_table) {
 	printf(BLUE("data address:")   " " GREEN("%p") "\n", id_name_table->data);
 
 	for (size_t i = 0; i < id_name_table->capacity; i++) {
-		printf(BLUE("Identifier[%zu]:")
+		printf(BLUE("Identifier[%.3zu]:")
 					" number - " GREEN("%d")
-					" type - " GREEN("%s")
+					" type - " GREEN("%15s")
 					" def_status - " GREEN("%zu")
 					" global - " GREEN("%zu")
-					" length - " GREEN("%zu")
+					" length - " GREEN("%.2zu")
 					" string - ",
 			   		i,
 					id_name_table->data[i].num,
