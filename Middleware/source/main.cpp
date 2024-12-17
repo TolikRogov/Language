@@ -14,9 +14,12 @@ int main() {
 	INIT_TREE(tree);
 	TREE_CTOR(&tree, &id_name_table);
 
+	ReadNameTableStandard(&id_name_table);
 	ReadTreeStandard(&tree, &id_name_table, &lexer);
 
 	TREE_DTOR(&tree);
+	ID_NAME_TABLE_DTOR(&id_name_table);
+	LEXER_DTOR(&lexer);
 	OPEN_HTML_FILE();
 
 	return 0;

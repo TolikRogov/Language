@@ -96,6 +96,11 @@ BinaryTreeStatusCode IdNameTableDtor(IdNameTable* id_name_table) {
 		id_name_table->data = NULL;
 	}
 
+	if (id_name_table->buffer) {
+		free(id_name_table->buffer);
+		id_name_table->buffer = NULL;
+	}
+
 	return TREE_NO_ERROR;
 }
 
@@ -134,8 +139,19 @@ BinaryTreeStatusCode PrintIdNameTable(IdNameTable* id_name_table) {
 	printf(BLUE("data address:")   " " GREEN("%p") "\n", id_name_table->data);
 
 	for (size_t i = 0; i < id_name_table->capacity; i++) {
-		printf(BLUE("Identifier[%zu]:") " number - " GREEN("%d") " type - " GREEN("%s") " def_status - " GREEN("%zu") " length - " GREEN("%zu") " string - ",
-			   i, id_name_table->data[i].num, IdNameTableGetIdTypeByType(id_name_table->data[i].type), id_name_table->data[i].define_status, id_name_table->data[i].length);
+		printf(BLUE("Identifier[%zu]:")
+					" number - " GREEN("%d")
+					" type - " GREEN("%s")
+					" def_status - " GREEN("%zu")
+					" global - " GREEN("%zu")
+					" length - " GREEN("%zu")
+					" string - ",
+			   		i,
+					id_name_table->data[i].num,
+					IdNameTableGetIdTypeByType(id_name_table->data[i].type),
+					id_name_table->data[i].define_status,
+					id_name_table->data[i].global,
+					id_name_table->data[i].length);
 		for (size_t j = 0; j < id_name_table->data[i].length; j++)
 			printf(GREEN("%c"), id_name_table->data[i].string[j]);
 		printf("\n");

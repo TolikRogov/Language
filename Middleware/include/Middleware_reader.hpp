@@ -6,3 +6,4 @@
 #include "Lexer.hpp"
 
 BinaryTreeStatusCode ReadTreeStandard(Tree* tree, IdNameTable* id_name_table, Lexer* lexer);
+BinaryTreeStatusCode ReadNameTableStandard(IdNameTable* id_name_table);

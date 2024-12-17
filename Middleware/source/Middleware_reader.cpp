@@ -106,6 +106,164 @@ Node_t* GetRoot(Lexer* lexer, size_t* pc, IdNameTable* id_name_table) {
 	return node;
 }
 
+static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
+
+	char* count_end = NULL;
+	id_name_table->size = id_name_table->capacity = (size_t)strtol(id_name_table->buffer, &count_end, 10);
+	if (!id_name_table->capacity)
+		TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+	size_t pc = (size_t)(count_end - id_name_table->buffer);
+	pc++;
+
+	id_name_table->data = (Identifier*)realloc(id_name_table->data, id_name_table->capacity * sizeof(Identifier));
+	if (!id_name_table->data)
+		TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
+
+	//General Name Table read
+	for (size_t i = 0; i < id_name_table->capacity; i++) {
+		id_name_table->data[i].define_status = 0;
+		id_name_table->data[i].global = 0;
+		id_name_table->data[i].length = 0;
+		id_name_table->data[i].num = 0;
+		id_name_table->data[i].scope_variables = {};
+		id_name_table->data[i].string = NULL;
+		id_name_table->data[i].type = ID_VAR;
+
+		id_name_table->data[i].string = id_name_table->buffer + pc;
+
+		size_t length = pc;
+		while (id_name_table->buffer[pc] != '\n') pc++;
+		length = pc++ - length;
+
+		id_name_table->data[i].length = length;
+	}
+
+	//Scopes count
+	pc++;
+	int scopes_count = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+	if (count_end == id_name_table->buffer + pc)
+		TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+	if (scopes_count < 1)
+		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+	pc = (size_t)(count_end - id_name_table->buffer);
+	pc += 2;
+
+	//Global scope
+	int global_scope = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+	if (count_end == id_name_table->buffer + pc)
+		TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+	if (global_scope != -1)
+		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+	pc = (size_t)(count_end - id_name_table->buffer);
+	pc++;
+
+	int global_scope_size = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+	if (count_end == id_name_table->buffer + pc)
+		TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+	if (global_scope_size < 0)
+		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+	pc = (size_t)(count_end - id_name_table->buffer);
+	pc++;
+
+	//Global scope
+	for (size_t i = 0; i < (size_t)global_scope_size; i++) {
+		int id_num = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+		if (count_end == id_name_table->buffer + pc)
+			TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+		if (id_num < 0)
+			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+		pc = (size_t)(count_end - id_name_table->buffer);
+		pc++;
+
+		int id_type = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+		if (count_end == id_name_table->buffer + pc)
+			TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+		if (id_type < 1)
+			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+		pc = (size_t)(count_end - id_name_table->buffer);
+		pc++;
+
+		id_name_table->data[id_num].type = (IdType)id_type;
+		id_name_table->data[id_num].global = 1;
+	}
+
+	//Other scopes
+	pc++;
+	for (size_t i = 0; i < (size_t)(scopes_count - 1); i++) {
+		int cur_scope_size = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+		if (count_end == id_name_table->buffer + pc)
+			TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+		if (cur_scope_size < 1)
+			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+		pc = (size_t)(count_end - id_name_table->buffer);
+		pc++;
+
+		int id_num = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+		if (count_end == id_name_table->buffer + pc)
+			TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+		if (id_num < 0)
+			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+		pc = (size_t)(count_end - id_name_table->buffer);
+		pc++;
+	}
+
+	PrintIdNameTable(id_name_table);
+
+	return TREE_NO_ERROR;
+}
+
+BinaryTreeStatusCode ReadNameTableStandard(IdNameTable* id_name_table) {
+
+	BinaryTreeStatusCode tree_status = TREE_NO_ERROR;
+
+	FILE* name_table_file = fopen(NAME_TABLE_STANDARD_FILE_, "r");
+	if (!name_table_file)
+		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
+
+	struct stat file_info = {};
+	stat(NAME_TABLE_STANDARD_FILE_, &file_info);
+
+	size_t size = (size_t)file_info.st_size;
+	char* buffer = (char*)calloc(size, sizeof(char));
+	if (!buffer)
+		TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
+
+	size_t read_check = fread(buffer, sizeof(char), size, name_table_file);
+	if (read_check != size)
+		TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+	if (fclose(name_table_file))
+		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
+
+#ifdef PRINT_DEBUG
+	for (size_t i = 0; i < size; i++) {
+		printf("%c", buffer[i]);
+	}
+#endif
+
+	id_name_table->buffer = buffer;
+
+	tree_status = NameTableReader(id_name_table);
+	TREE_ERROR_CHECK(tree_status);
+
+	return TREE_NO_ERROR;
+}
+
 BinaryTreeStatusCode ReadTreeStandard(Tree* tree, IdNameTable* id_name_table, Lexer* lexer) {
 
 	BinaryTreeStatusCode tree_status = TREE_NO_ERROR;

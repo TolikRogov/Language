@@ -45,7 +45,7 @@ struct IdNameTable {
 	Identifier* data;
 	size_t capacity;
 	size_t size;
-	FILE* standard_file;
+	char* buffer;
 };
 
 const size_t DEFAULT_COUNT_LOCAL_VARIABLES = 10;

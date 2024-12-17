@@ -103,7 +103,7 @@ Node_t* GetIdFunction(FrontedDescent* descent) {
 	if (descent->lexer->tokens[*(descent->pc) + 1].type == KEYWORD && descent->lexer->tokens[(*(descent->pc)) + 1].data.val_key_word != OPEN_ROUND)
 		return NULL;
 	cur_id->type = ID_FUNCTION;
-
+	cur_id->global = 1;
 	if (descent->lexer->tokens[*(descent->pc) - 1].type == KEYWORD && descent->lexer->tokens[(*(descent->pc)) - 1].data.val_key_word != INIT_TYPE)
 		return _ID(descent->lexer->tokens[(*(descent->pc))++].data.val_id);
 
