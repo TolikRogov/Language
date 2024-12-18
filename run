@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cd Frontend/
+cmake -S ./ -B build/Debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/Debug && ./build/Debug/Frontend
+cd ../
+
+cd Middleware/
+cmake -S ./ -B build/Debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/Debug && ./build/Debug/Middleware
+cd ../

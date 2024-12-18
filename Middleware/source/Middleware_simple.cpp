@@ -95,6 +95,8 @@ int TrivialTransformations(Node_t* node, size_t* count_of_changes) {
 		Node_t* right = doCopySubtree(node->to->right);											\
 		TreeDtor(node->left); TreeDtor(node->right);											\
 		node->left = left;	  node->right = right;												\
+		if (node->left) node->left->parent = node; 												\
+		if (node->right) node->right->parent = node;											\
 		(*count_of_changes)++;																	\
 		return TREE_NO_ERROR;																	\
 	}																							\
@@ -195,7 +197,9 @@ int ConvolutionConstant(Node_t* node, size_t* count_of_changes, IdNameTable* id_
 					Node_t* diff_subtree = doDifferentiation(node->right, id_name_table);
 					if (node->parent->right == node) node->parent->right = diff_subtree;
 					if (node->parent->left == node)	 node->parent->left  = diff_subtree;
+					diff_subtree->parent = node->parent;
 					TreeDtor(node);
+					return 1;
 				}
 				default: 	return 0;
 			}

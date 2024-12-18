@@ -6,7 +6,7 @@ double main() {
 
 	double x = 10 ^ 2;
 	double y = 8 - 8;
-	double result = diff(1 * x ^ 2);
+	double result = diff(1 + x ^ 2);
 
 	printf(result);
 
