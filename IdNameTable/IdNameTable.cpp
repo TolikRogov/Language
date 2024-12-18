@@ -1,5 +1,11 @@
 #include "IdNameTable.hpp"
 
+size_t NumberOfVariablesInSubtree(Node_t* node, IdNameTable* id_name_table) {
+	return ((node->type == IDENTIFIER && id_name_table->data[node->data.val_id].type == ID_VAR) ? 1 : 0) + \
+			(node->left ? NumberOfVariablesInSubtree(node->left, id_name_table) : 0) + \
+			(node->right ? NumberOfVariablesInSubtree(node->right, id_name_table) : 0);
+}
+
 int CountOfGlobalVariables(IdNameTable* id_name_table) {
 
 	if (!id_name_table)

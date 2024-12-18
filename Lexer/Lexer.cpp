@@ -172,7 +172,7 @@ BinaryTreeStatusCode LexicalAnalysis(char* buffer, Lexer* lexer, IdNameTable* id
 
 		token_end = token_start + 1;
 
-		while ((isalpha(buffer[token_end])) && (isalpha(buffer[token_end - 1]))) { token_end++; }
+		while ((isalpha(buffer[token_end]) || buffer[token_end] == '_') && ((isalpha(buffer[token_end - 1])) || buffer[token_end - 1] == '_')) { token_end++; }
 
 		int op_find = 0;
 		for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {

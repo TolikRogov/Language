@@ -61,3 +61,4 @@ const char* IdNameTableGetIdTypeByType(IdType type);
 int FindLocalVariableInScope(Identifier* scope, Identifier* var);
 BinaryTreeStatusCode ScopeLocalVariablesRealloc(Identifier* scope);
 int CountOfGlobalVariables(IdNameTable* id_name_table);
+size_t NumberOfVariablesInSubtree(Node_t* node, IdNameTable* id_name_table);

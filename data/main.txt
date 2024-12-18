@@ -2,12 +2,24 @@ double global = 4 + 2 - 1;
 
 double main() {
 
+	double tester = input();
+
 	double x = 10 ^ 2;
 	double y = 8 - 8;
-	double result = 1 * x;
+	double result = diff(1 * x ^ 2);
 
-	while (x + y) {
+	printf(result);
+
+	while ((x + y not_equal tester or result below_equal tester) and !(x not_equal y)) {
 		result = sum(x, y);
+
+		if (result above_equal 0) {
+			break;
+		};
+	};
+
+	if (tester above result) {
+		abort;
 	};
 
 	return result;
