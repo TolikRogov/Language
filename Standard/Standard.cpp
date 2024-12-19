@@ -23,7 +23,7 @@ BinaryTreeStatusCode IdNameTableStandard(IdNameTable* id_name_table) {
 
 	fprintf(name_table_standard, "\n");
 
-	fprintf(name_table_standard, "-1 %d\n", CountOfGlobalVariables(id_name_table));
+	fprintf(name_table_standard, "%d -1\n", CountOfGlobalVariables(id_name_table));
 	for (size_t i = 0; i < id_name_table->size; i++) {
 		if (id_name_table->data[i].global)
 			fprintf(name_table_standard, "%d %d\n", id_name_table->data[i].num, id_name_table->data[i].type);

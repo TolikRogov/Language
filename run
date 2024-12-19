@@ -1,17 +1,15 @@
 #!/bin/bash
 
-cd Frontend/
-./run
-cd ../
+STATUS=1
 
-cd Middleware/
-./run
-cd ../
-
-cd Backend/
-./run
-cd ../
-
-cd Processor/
-./run
-cd ../
+for dir in Frontend Middleware Backend Processor
+do
+	if [ $STATUS == 1 ];
+	then
+		cd $dir
+		./run || STATUS=0
+		cd ../
+	else
+		break
+	fi
+done

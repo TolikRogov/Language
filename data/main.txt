@@ -1,8 +1,30 @@
+double a = input();
+double b = input();
+double c = input();
+
 double main() {
 
-	double a = input();
+	if (a equal 0) {
+		if (b equal 0) {
+			if (c equal 0) {
+				printf(INFINITY);
+				return 0;
+			};
+			printf(NAN);
+			return 0;
+		};
 
-	printf(a + 10 ^ 2);
+		if (c equal 0) {
+			printf(1);
+			printf(0);
+			return 0;
+		};
+
+		printf((0 - c) / b);
+		return 0;
+	};
+
+	printf(b);
 
 	return 0;
 };

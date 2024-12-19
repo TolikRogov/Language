@@ -41,10 +41,8 @@ Node_t* GetNode(Lexer* lexer, size_t* pc, IdNameTable* id_name_table) {
 
 	Node_t* node = NULL;
 
-	if ((lexer->tokens[*pc].type == KEYWORD && lexer->tokens[*pc].data.val_key_word != OPEN_ROUND) || lexer->tokens[*pc].type != KEYWORD) {
-		TREE_ERROR_MESSAGE(TREE_ALLOC_ERROR);
+	if ((lexer->tokens[*pc].type == KEYWORD && lexer->tokens[*pc].data.val_key_word != OPEN_ROUND) || lexer->tokens[*pc].type != KEYWORD)
 		return NULL;
-	}
 
 	(*pc)++;
 	if (lexer->tokens[(*pc)].type != NUMBER)
@@ -153,21 +151,21 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 	pc += 2;
 
 	//Global scope
-	int global_scope = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
-	if (count_end == id_name_table->buffer + pc)
-		TREE_ERROR_CHECK(TREE_READ_ERROR);
-
-	if (global_scope != -1)
-		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
-
-	pc = (size_t)(count_end - id_name_table->buffer);
-	pc++;
-
 	int global_scope_size = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
 	if (count_end == id_name_table->buffer + pc)
 		TREE_ERROR_CHECK(TREE_READ_ERROR);
 
 	if (global_scope_size < 0)
+		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+	pc = (size_t)(count_end - id_name_table->buffer);
+	pc++;
+
+	int global_scope = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+	if (count_end == id_name_table->buffer + pc)
+		TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+	if (global_scope != -1)
 		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
 
 	pc = (size_t)(count_end - id_name_table->buffer);
@@ -207,7 +205,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 		if (count_end == id_name_table->buffer + pc)
 			TREE_ERROR_CHECK(TREE_READ_ERROR);
 
-		if (cur_scope_size < 1)
+		if (cur_scope_size < 0)
 			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
 
 		pc = (size_t)(count_end - id_name_table->buffer);

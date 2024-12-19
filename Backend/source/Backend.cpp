@@ -25,16 +25,40 @@ BinaryTreeStatusCode WriteAssembleCode(Node_t* node, IdNameTable* id_name_table,
 		return TREE_NO_ERROR;
 
 	static size_t tabs = 0;
+	static size_t cnt_if = 0;
 
 #define TABS { for (size_t i = 0; i < tabs; i++) {fprintf(asm_file, "\t");} }
 
 	switch (node->type) {
 		case KEYWORD: {
 			switch (node->data.val_key_word) {
+				case ABOVE: {
+					WriteAssembleCode(node->left, id_name_table, asm_file);
+					WriteAssembleCode(node->right, id_name_table, asm_file);
+					TABS fprintf(asm_file, "%s ", array_commands[CMD_JBE].cmd_name);
+					break;
+				}
+				case EQUAL: {
+					WriteAssembleCode(node->left, id_name_table, asm_file);
+					WriteAssembleCode(node->right, id_name_table, asm_file);
+					TABS fprintf(asm_file, "%s ", array_commands[CMD_JNE].cmd_name);
+					break;
+				}
 				case SEQUENTIAL_OP: {
 					WriteAssembleCode(node->left, id_name_table, asm_file);
 					fprintf(asm_file, "\n");
 					WriteAssembleCode(node->right, id_name_table, asm_file);
+					break;
+				}
+				case IF: {
+					cnt_if++;
+					size_t old_num = cnt_if;
+					WriteAssembleCode(node->left, id_name_table, asm_file);
+					fprintf(asm_file, "end_if%zu:\n", cnt_if);
+					tabs++;
+					WriteAssembleCode(node->right, id_name_table, asm_file);
+					tabs--;
+					TABS fprintf(asm_file, "end_if%zu:\n", old_num);
 					break;
 				}
 				case COMMA_OP: {
@@ -58,6 +82,17 @@ BinaryTreeStatusCode WriteAssembleCode(Node_t* node, IdNameTable* id_name_table,
 					WriteAssembleCode(node->left, id_name_table, asm_file);
 					WriteAssembleCode(node->right, id_name_table, asm_file);
 					TABS fprintf(asm_file, "%s\n", array_commands[CMD_ADD].cmd_name);
+					break;
+				}
+				case SUB: {
+					WriteAssembleCode(node->left, id_name_table, asm_file);
+					WriteAssembleCode(node->right, id_name_table, asm_file);
+					TABS fprintf(asm_file, "%s\n", array_commands[CMD_SUB].cmd_name);
+					break;
+				}
+				case SIN: {
+					WriteAssembleCode(node->right, id_name_table, asm_file);
+					TABS fprintf(asm_file, "%s\n", array_commands[CMD_SIN].cmd_name);
 					break;
 				}
 				case RETURN: {

@@ -853,7 +853,7 @@ Node_t* GetGrammar(FrontedDescent* descent) {
 		global_node = prev_global_node;
 	}
 
-	(*descent->pc)--;
+	if (*descent->pc > 0) (*descent->pc)--;
 	Node_t* node = GetFunctionDefinition(descent);
 	if (!node)
 		LANGUAGE_SYNTAX_ERROR(descent);
