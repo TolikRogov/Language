@@ -5,6 +5,8 @@
 
 int main() {
 
+	setlocale(LC_ALL, "");
+
 	BinaryTreeStatusCode tree_status = TREE_NO_ERROR;
 
 	INIT_ID_NAME_TABLE(id_name_table);

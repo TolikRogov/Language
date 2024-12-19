@@ -8,6 +8,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/stat.h>
+#include <wchar.h>
+#include <locale.h>
 
 #define RED(str) 		"\033[31;1m" str "\033[0m"
 #define YELLOW(str) 	"\033[33;4m" str "\033[0m"
