@@ -15,6 +15,7 @@ int main() {
 	TREE_CTOR(&tree, &id_name_table);
 
 	STANDARD_READER(&tree, &id_name_table, &lexer);
+	RunBackend(&tree, &id_name_table);
 
 	TREE_DTOR(&tree);
 	ID_NAME_TABLE_DTOR(&id_name_table);

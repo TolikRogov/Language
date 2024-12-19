@@ -1,31 +1,20 @@
-double global = 4 + 2 - 1;
+Signature: TGF
+Version: 3
+    LINE	CMD_NAME	ARG_NAME	CMD_CODE	 CMD_HEX	ARG_CODE	 ARG_HEX	
+00000000	    CALL	   main:	00000052	00000034	????????	????????	
+00000001	     HLT	--------	00000000	00000000	--------	--------	
+00000003	      IN	--------	00000009	00000009	--------	--------	
+00000004	     POP	[     1]	00000162	000000a2	       1	1.000000	
+00000005	    PUSH	[     1]	00000161	000000a1	       1	1.000000	
+00000006	    PUSH	      10	00000033	00000021	      10	10.000000	
+00000007	     ADD	--------	00000003	00000003	--------	--------	
+00000008	     OUT	--------	00000010	0000000a	--------	--------	
+00000009	    PUSH	       0	00000033	00000021	       0	0.000000	
+00000010	     RET	--------	00000021	00000015	--------	--------	
+Labels: 
+	   main: #1, addr 10
 
-double main() {
+FixUps: 
+	   main: #1, addr 10, fix 1, fixed 10
 
-	double tester = input();
-
-	double x = 10 ^ 2;
-	double y = 8 - 8;
-	double result = diff(1 + x ^ 2);
-
-	printf(result);
-
-	while ((x + y not_equal tester or result below_equal tester) and !(x not_equal y)) {
-		result = sum(x, y);
-
-		if (result above_equal 0) {
-			break;
-		};
-	};
-
-	if (tester above result) {
-		abort;
-	};
-
-	return result;
-};
-
-double sum(double x, double y) {
-	double result = floor(sin(global) + cos(y) - sqrt(x + y));
-	return result;
-};
+Code size: 50

@@ -42,6 +42,19 @@ int StrCmp(const char* str1, const char* str2) {
 	return (*(str1 + i) - *(str2 + i));
 }
 
+int StrNCmp(const char* str1, const char* str2, int n1, int n2) {
+
+	if (!str1 || !str2)
+		return -1;
+
+	int i = 0;
+	for (; *(str1 + i) != '\0' && *(str2 + i) != '\0' && i < n1 && i < n2; i++) {
+		if (*(str1 + i) != *(str2 + i))
+			break;
+	}
+	return (*(str1 + i) - *(str2 + i));
+}
+
 int DiffCompareDouble(double var1, double var2) {
 	return (fabs(var1 - var2) <= DIFF_EPS);
 }

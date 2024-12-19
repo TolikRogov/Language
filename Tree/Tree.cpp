@@ -109,7 +109,7 @@ BinaryTreeStatusCode NodePrintData(Node_t* node) {
 		case VAR_DECLARATION:		{ printf(GREEN("%zu") "\n", node->data.val_decl_var);						break; }
 		case NUMBER:				{ printf(GREEN("%lg") "\n", node->data.val_num); 							break; }
 		case IDENTIFIER:			{ printf(GREEN("%zu") "\n", node->data.val_id);  							break; }
-		case KEYWORD:				{ printf(GREEN("%s") "\n", keywords[node->data.val_key_word].string); 		break; }
+		case KEYWORD:				{ printf(GREEN("%s") "\n",  KeyWordsGetString(node->data.val_key_word)); 	break; }
 		case FUNCTION_DEFINITION:	{ printf(GREEN("%zu") "\n", node->data.val_func_def);						break; }
 		default: TREE_ERROR_CHECK(TREE_INVALID_TYPE);
 	}

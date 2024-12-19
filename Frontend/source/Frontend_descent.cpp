@@ -397,7 +397,7 @@ Node_t* GetAssignment(FrontedDescent* descent) {
 	if (!node2)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	return node = _ASSIGNMENT(node, node2);
+	return node = _ASSIGNMENT(node2, node);
 }
 
 Node_t* GetVariableDeclaration(FrontedDescent* descent) {
@@ -424,7 +424,7 @@ Node_t* GetVariableDeclaration(FrontedDescent* descent) {
 	if (!node2)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	return node = _VAR_DEC(node->data.val_id, _INIT_TYPE(), _ASSIGNMENT(node, node2));
+	return node = _VAR_DEC(node->data.val_id, _INIT_TYPE(), _ASSIGNMENT(node2, node));
 }
 
 Node_t* GetComparison(FrontedDescent* descent) {
