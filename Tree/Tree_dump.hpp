@@ -13,7 +13,11 @@
 
 #define IMG_EXTENSION 	"svg"
 
-#define OPEN_HTML_FILE() system(OPEN HTML_FILE_);
+#ifdef PRINT_DEBUG
+	#define OPEN_HTML_FILE() system(OPEN HTML_FILE_);
+#else
+	#define OPEN_HTML_FILE()
+#endif
 
 #ifdef UNKNOWN_WHAT_IN_TREE
 	#define UNKNOWN_WHAT_(...) __VA_ARGS__

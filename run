@@ -1,16 +1,17 @@
 #!/bin/bash
 
 cd Frontend/
-cmake -S ./ -B build/Debug -DCMAKE_BUILD_TYPE=Debug
-cmake --build build/Debug && ./build/Debug/Frontend
+./run
 cd ../
 
 cd Middleware/
-cmake -S ./ -B build/Debug -DCMAKE_BUILD_TYPE=Debug
-cmake --build build/Debug && ./build/Debug/Middleware
+./run
 cd ../
 
 cd Backend/
-cmake -S ./ -B build/Debug -DCMAKE_BUILD_TYPE=Debug
-cmake --build build/Debug && ./build/Debug/Backend
+./run
+cd ../
+
+cd Processor/
+./run
 cd ../
