@@ -1,6 +1,6 @@
 #include "Tree.hpp"
 
-char TREE_DUMP = TREE_FIRST_RUN;
+wchar_t TREE_DUMP = TREE_FIRST_RUN;
 
 BinaryTreeStatusCode TreeCtor(Tree* tree) {
 
@@ -109,7 +109,7 @@ BinaryTreeStatusCode NodePrintData(Node_t* node) {
 		case VAR_DECLARATION:		{ printf(GREEN("%zu") "\n", node->data.val_decl_var);						break; }
 		case NUMBER:				{ printf(GREEN("%lg") "\n", node->data.val_num); 							break; }
 		case IDENTIFIER:			{ printf(GREEN("%zu") "\n", node->data.val_id);  							break; }
-		case KEYWORD:				{ printf(GREEN("%s") "\n",  KeyWordsGetString(node->data.val_key_word)); 	break; }
+		case KEYWORD:				{ printf(GREEN("%ls") "\n",  KeyWordsGetString(node->data.val_key_word)); 	break; }
 		case FUNCTION_DEFINITION:	{ printf(GREEN("%zu") "\n", node->data.val_func_def);						break; }
 		default: TREE_ERROR_CHECK(TREE_INVALID_TYPE);
 	}
@@ -117,20 +117,20 @@ BinaryTreeStatusCode NodePrintData(Node_t* node) {
 	return TREE_NO_ERROR;
 }
 
-const char* GetNodeType(Node_t* node) {
+const wchar_t* GetNodeType(Node_t* node) {
 
 	if (!node)
 		return NULL;
 
 	switch (node->type) {
-		case UNW: 					return RET_STRING(UNW);
-		case PARAMETERS:			return RET_STRING(PARAMETERS);
-		case CALL:					return RET_STRING(CALL);
-		case VAR_DECLARATION:		return RET_STRING(VAR_DECLARATION);
-		case NUMBER:				return RET_STRING(NUMBER);
-		case IDENTIFIER:			return RET_STRING(IDENTIFIER);
-		case KEYWORD:				return RET_STRING(KEYWORD);
-		case FUNCTION_DEFINITION:	return RET_STRING(FUNCTION_DEFINITION);
+		case UNW: 					return L"UNW";
+		case PARAMETERS:			return L"PARAMETERS";
+		case CALL:					return L"CALL";
+		case VAR_DECLARATION:		return L"VAR_DECLARATION";
+		case NUMBER:				return L"NUMBER";
+		case IDENTIFIER:			return L"IDENTIFIER";
+		case KEYWORD:				return L"KEYWORD";
+		case FUNCTION_DEFINITION:	return L"FUNCTION_DEFINITION";
 		default: return NULL;
 	}
 }

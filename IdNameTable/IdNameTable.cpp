@@ -110,7 +110,7 @@ BinaryTreeStatusCode IdNameTableDtor(IdNameTable* id_name_table) {
 	return TREE_NO_ERROR;
 }
 
-int IdNameTableGetIdNumber(IdNameTable* id_name_table, const char* string, size_t length) {
+int IdNameTableGetIdNumber(IdNameTable* id_name_table, const wchar_t* string, size_t length) {
 
 	for (size_t i = 0; i < id_name_table->size; i++) {
 		int equal = 1;
@@ -127,12 +127,12 @@ int IdNameTableGetIdNumber(IdNameTable* id_name_table, const char* string, size_
 	return -1;
 }
 
-const char* IdNameTableGetIdTypeByType(IdType type) {
+const wchar_t* IdNameTableGetIdTypeByType(IdType type) {
 	switch (type) {
-		case ID_FUNCTION: return RET_STRING(ID_FUNCTION);
-		case ID_VAR: return RET_STRING(ID_VAR);
+		case ID_FUNCTION: 	return L"ID_FUNCTION";
+		case ID_VAR: 		return L"ID_VAR";
 		case ID_UNW:
-		default: return RET_STRING(ID_UNW);
+		default: 			return L"ID_UNW";
 	}
 }
 
@@ -147,7 +147,7 @@ BinaryTreeStatusCode PrintIdNameTable(IdNameTable* id_name_table) {
 	for (size_t i = 0; i < id_name_table->capacity; i++) {
 		printf(BLUE("Identifier[%.3zu]:")
 					" number - " GREEN("%d")
-					" type - " GREEN("%15s")
+					" type - " GREEN("%15ls")
 					" def_status - " GREEN("%zu")
 					" global - " GREEN("%zu")
 					" length - " GREEN("%.2zu")
@@ -159,7 +159,7 @@ BinaryTreeStatusCode PrintIdNameTable(IdNameTable* id_name_table) {
 					id_name_table->data[i].global,
 					id_name_table->data[i].length);
 		for (size_t j = 0; j < id_name_table->data[i].length; j++)
-			printf(GREEN("%c"), id_name_table->data[i].string[j]);
+			printf(GREEN("%lc"), id_name_table->data[i].string[j]);
 		printf("\n");
 	}
 

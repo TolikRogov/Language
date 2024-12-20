@@ -34,7 +34,7 @@ struct ScopeVariables {
 struct Identifier  {
 	int num;
 	IdType type;
-	char* string;
+	wchar_t* string;
 	size_t length;
 	size_t define_status;
 	size_t global;
@@ -45,7 +45,7 @@ struct IdNameTable {
 	Identifier* data;
 	size_t capacity;
 	size_t size;
-	char* buffer;
+	wchar_t* buffer;
 };
 
 const size_t DEFAULT_COUNT_LOCAL_VARIABLES = 10;
@@ -56,8 +56,8 @@ BinaryTreeStatusCode IdNameTableCtor(IdNameTable* var_name_table);
 BinaryTreeStatusCode IdNameTableDtor(IdNameTable* var_name_table);
 BinaryTreeStatusCode PrintIdNameTable(IdNameTable* id_name_table);
 
-int IdNameTableGetIdNumber(IdNameTable* id_name_table, const char* string, size_t length);
-const char* IdNameTableGetIdTypeByType(IdType type);
+int IdNameTableGetIdNumber(IdNameTable* id_name_table, const wchar_t* string, size_t length);
+const wchar_t* IdNameTableGetIdTypeByType(IdType type);
 int FindLocalVariableInScope(Identifier* scope, Identifier* var);
 BinaryTreeStatusCode ScopeLocalVariablesRealloc(Identifier* scope);
 int CountOfGlobalVariables(IdNameTable* id_name_table);

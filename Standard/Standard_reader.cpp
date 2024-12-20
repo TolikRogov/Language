@@ -41,7 +41,7 @@ Node_t* GetNode(Lexer* lexer, size_t* pc, IdNameTable* id_name_table) {
 
 	Node_t* node = NULL;
 
-	if ((lexer->tokens[*pc].type == KEYWORD && lexer->tokens[*pc].data.val_key_word != OPEN_ROUND) || lexer->tokens[*pc].type != KEYWORD)
+	if ((lexer->tokens[*pc].type == KEYWORD && lexer->tokens[*pc].data.val_key_word != STD_OPEN_ROUND) || lexer->tokens[*pc].type != KEYWORD)
 		return NULL;
 
 	(*pc)++;
@@ -73,7 +73,7 @@ Node_t* GetNode(Lexer* lexer, size_t* pc, IdNameTable* id_name_table) {
 		default: { TREE_ERROR_MESSAGE(TREE_LANGUAGE_SYNTAX_ERROR); return NULL; }
 	}
 
-	if ((lexer->tokens[*pc].type == KEYWORD && lexer->tokens[*pc].data.val_key_word != CLOSE_ROUND) || lexer->tokens[*pc].type != KEYWORD) {
+	if ((lexer->tokens[*pc].type == KEYWORD && lexer->tokens[*pc].data.val_key_word != STD_CLOSE_ROUND) || lexer->tokens[*pc].type != KEYWORD) {
 		TREE_ERROR_MESSAGE(TREE_ALLOC_ERROR);
 		return NULL;
 	}
@@ -106,8 +106,8 @@ Node_t* GetRoot(Lexer* lexer, size_t* pc, IdNameTable* id_name_table) {
 
 static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 
-	char* count_end = NULL;
-	id_name_table->size = id_name_table->capacity = (size_t)strtol(id_name_table->buffer, &count_end, 10);
+	wchar_t* count_end = NULL;
+	id_name_table->size = id_name_table->capacity = (size_t)wcstol(id_name_table->buffer, &count_end, 10);
 	if (!id_name_table->capacity)
 		TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -140,7 +140,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 
 	//Scopes count
 	pc++;
-	int scopes_count = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+	int scopes_count = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 	if (count_end == id_name_table->buffer + pc)
 		TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -151,7 +151,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 	pc += 2;
 
 	//Global scope
-	int global_scope_size = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+	int global_scope_size = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 	if (count_end == id_name_table->buffer + pc)
 		TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -161,7 +161,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 	pc = (size_t)(count_end - id_name_table->buffer);
 	pc++;
 
-	int global_scope = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+	int global_scope = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 	if (count_end == id_name_table->buffer + pc)
 		TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -173,7 +173,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 
 	//Global scope
 	for (size_t i = 0; i < (size_t)global_scope_size; i++) {
-		int id_num = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+		int id_num = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 		if (count_end == id_name_table->buffer + pc)
 			TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -183,7 +183,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 		pc = (size_t)(count_end - id_name_table->buffer);
 		pc++;
 
-		int id_type = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+		int id_type = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 		if (count_end == id_name_table->buffer + pc)
 			TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -201,7 +201,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 	//Other scopes
 	pc++;
 	for (size_t i = 0; i < (size_t)(scopes_count - 1); i++) {
-		int cur_scope_size = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+		int cur_scope_size = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 		if (count_end == id_name_table->buffer + pc)
 			TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -211,7 +211,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 		pc = (size_t)(count_end - id_name_table->buffer);
 		pc++;
 
-		int id_num = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+		int id_num = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 		if (count_end == id_name_table->buffer + pc)
 			TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -226,7 +226,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 		if (!id_name_table->data[id_num].scope_variables.data)
 			TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
 		for (size_t j = 0; j < (size_t)cur_scope_size; j++) {
-			int local_id_num = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+			int local_id_num = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 			if (count_end == id_name_table->buffer + pc)
 				TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -236,7 +236,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 			pc = (size_t)(count_end - id_name_table->buffer);
 			pc++;
 
-			int local_id_type = (int)strtol(id_name_table->buffer + pc, &count_end, 10);
+			int local_id_type = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 			if (count_end == id_name_table->buffer + pc)
 				TREE_ERROR_CHECK(TREE_READ_ERROR);
 
@@ -271,21 +271,20 @@ BinaryTreeStatusCode ReadNameTableStandard(IdNameTable* id_name_table) {
 	stat(NAME_TABLE_STANDARD_FILE_, &file_info);
 
 	size_t size = (size_t)file_info.st_size;
-	char* buffer = (char*)calloc(size, sizeof(char));
+	wchar_t* buffer = (wchar_t*)calloc(size, sizeof(wchar_t));
 	if (!buffer)
 		TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
 
-	size_t read_check = fread(buffer, sizeof(char), size, name_table_file);
-	if (read_check != size)
-		TREE_ERROR_CHECK(TREE_READ_ERROR);
+	wchar_t c = 0;
+	size_t ip = 0;
+	while ((c = fgetwc(name_table_file)) != EOF) { buffer[ip] = c; ip++; }
 
 	if (fclose(name_table_file))
 		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
 
 #ifdef PRINT_DEBUG
-	for (size_t i = 0; i < size; i++) {
-		printf("%c", buffer[i]);
-	}
+	for (size_t i = 0; i < ip; i++) printf("%lc", buffer[i]);
+	printf("%zu\n", ip);
 #endif
 
 	id_name_table->buffer = buffer;
@@ -308,21 +307,20 @@ BinaryTreeStatusCode ReadTreeStandard(Tree* tree, IdNameTable* id_name_table, Le
 	stat(TREE_STANDARD_FILE_, &file_info);
 
 	size_t size = (size_t)file_info.st_size;
-	char* buffer = (char*)calloc(size, sizeof(char));
+	wchar_t* buffer = (wchar_t*)calloc(size, sizeof(wchar_t));
 	if (!buffer)
 		TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
 
-	size_t read_check = fread(buffer, sizeof(char), size, tree_file);
-	if (read_check != size)
-		TREE_ERROR_CHECK(TREE_READ_ERROR);
+	wchar_t c = 0;
+	size_t ip = 0;
+	while ((c = fgetwc(tree_file)) != EOF) { buffer[ip] = c; ip++; }
 
 	if (fclose(tree_file))
 		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
 
 #ifdef PRINT_DEBUG
-	for (size_t i = 0; i < size; i++) {
-		printf("%c", buffer[i]);
-	}
+	for (size_t i = 0; i < ip; i++) printf("%lc", buffer[i]);
+	printf("%zu\n", ip);
 #endif
 
 	lexer->buffer = buffer;

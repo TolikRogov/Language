@@ -50,7 +50,7 @@ BinaryTreeStatusCode ColorLegendPrint() {
 		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
 
 #define HTML_PRINTF(...) fprintf(html_file, __VA_ARGS__);
-#define COLORS_PRINTF(...) HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7s; border-color: %.7s;'>%s</div>", __VA_ARGS__);
+#define COLORS_PRINTF(...) HTML_PRINTF("\t\t<div class='circle' style='background-color: %.7ls; border-color: %.7ls;'>%s</div>", __VA_ARGS__);
 
 	HTML_PRINTF("\t<div class='dump'>\n");
 	HTML_PRINTF("\tColors meanings:<br> \n");
@@ -68,9 +68,9 @@ BinaryTreeStatusCode ColorLegendPrint() {
 
 #undef COLORS_PRINTF
 
-	HTML_PRINTF("\n\t\t\t<span style='color: %.7s'>&#11153; left subtree edge</span>", color.left_edge + 1);
-	HTML_PRINTF("\t\t\t<span style='color: %.7s'>&#11153; right subtree edge</span>", color.right_edge + 1);
-	HTML_PRINTF("\t\t\t<span style='color: %.7s'>&#11153; unknown what edge</span>", color.unknown_what_edge + 1);
+	HTML_PRINTF("\n\t\t\t<span style='color: %.7ls'>&#11153; left subtree edge</span>", color.left_edge + 1);
+	HTML_PRINTF("\t\t\t<span style='color: %.7ls'>&#11153; right subtree edge</span>", color.right_edge + 1);
+	HTML_PRINTF("\t\t\t<span style='color: %.7ls'>&#11153; unknown what edge</span>", color.unknown_what_edge + 1);
 	HTML_PRINTF("\n\t</div>\n\n");
 
 	if (fclose(html_file))
@@ -92,7 +92,7 @@ BinaryTreeStatusCode KeyWordsTablePrint() {
 	HTML_PRINTF("\t<div class='dump'>\n\tKeyWordsTable:\n\t\t<table class='name_table'>\n");
 	HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>Number</td>\n\t\t\t\t<td>KeyWord</td>\n\t\t\t</tr>\n");
 	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
-		HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>%d</td>\n\t\t\t\t<td>%s</td>\n\t\t\t</tr>\n",
+		HTML_PRINTF("\t\t\t<tr>\n\t\t\t\t<td>%d</td>\n\t\t\t\t<td>%ls</td>\n\t\t\t</tr>\n",
 					keywords[i].num, keywords[i].string);
 	}
 	HTML_PRINTF("\t\t</table>\n\t</div>\n\n");
@@ -127,7 +127,7 @@ BinaryTreeStatusCode IdNameTablePrint(IdNameTable* id_name_table) {
 	for (size_t i = 0; i < id_name_table->size; i++) {
 		HTML_PRINTF("\t\t\t<tr>\n"
 					"\t\t\t\t<td>%d</td>\n"
-					"\t\t\t\t<td>%s</td>\n"
+					"\t\t\t\t<td>%ls</td>\n"
 					"\t\t\t\t<td>%zu</td>\n"
 					"\t\t\t\t<td>%zu</td>\n"
 					"\t\t\t\t<td>%zu</td>\n",
@@ -168,7 +168,7 @@ BinaryTreeStatusCode BinaryTreeCssFile() {
 #define CSS_PRINTF(...) fprintf(css_file, __VA_ARGS__);
 
 	CSS_PRINTF("body {\n"\
-			   "\tbackground-color: %.7s;\n"\
+			   "\tbackground-color: %.7ls;\n"\
 			   "}\n", color.html_background + 1);
 
 	CSS_PRINTF("h1 {\n"\
@@ -193,24 +193,24 @@ BinaryTreeStatusCode BinaryTreeCssFile() {
 			   "}\n");
 
 	CSS_PRINTF(".addr {\n"\
-			   "\tcolor: %.7s;\n"\
+			   "\tcolor: %.7ls;\n"\
 			   "}\n", color.address + 1);
 
 	CSS_PRINTF(".path {\n"\
-			   "\tcolor: %.7s;\n"\
+			   "\tcolor: %.7ls;\n"\
 			   "}\n", color.path + 1);
 
 	CSS_PRINTF(".line {\n"\
-			   "\tcolor: %.7s;\n"\
+			   "\tcolor: %.7ls;\n"\
 			   "}\n", color.line + 1);
 
 	CSS_PRINTF(".name {\n"\
-			   "\tcolor: %.7s;\n"\
+			   "\tcolor: %.7ls;\n"\
 			   "}\n", color.name + 1);
 
 	CSS_PRINTF(".dump {\n"\
-			   "\tbackground-color: %.7s;\n"\
-			   "\tborder: 1px solid %.7s;\n"\
+			   "\tbackground-color: %.7ls;\n"\
+			   "\tborder: 1px solid %.7ls;\n"\
 			   "\tborder-radius: 20px;\n"\
 			   "\tpadding: 25px 0px;\n"\
 			   "\tmargin: 20px 0px;\n"\
@@ -219,11 +219,11 @@ BinaryTreeStatusCode BinaryTreeCssFile() {
 			   "}\n", color.dump_background + 1, color.dump_border + 1);
 
 	CSS_PRINTF(".num {\n"\
-			   "\tcolor: %.7s;\n"\
+			   "\tcolor: %.7ls;\n"\
 			   "}\n", color.number + 1);
 
 	CSS_PRINTF(".func {\n"\
-			   "\tcolor: %.7s;"\
+			   "\tcolor: %.7ls;"\
 			   "}\n", color.function + 1);
 
 	CSS_PRINTF(".img {\n"\
@@ -235,35 +235,35 @@ BinaryTreeStatusCode BinaryTreeCssFile() {
 
 	CSS_PRINTF(".name_table {\n"\
 			"\twidth: 90%%;\n"\
-			"\tborder: 15px solid %.7s;\n"\
+			"\tborder: 15px solid %.7ls;\n"\
 			"\tborder-collapse: collapse;\n"\
 			"\tmargin: auto;\n"\
 			"\ttable-layout: auto;\n"\
 			"\ttext-align: center;\n"\
 			"\tmargin-bottom: 20px;\n"\
-			"\tborder-top: 5px solid %.7s;\n"\
+			"\tborder-top: 5px solid %.7ls;\n"\
 			"}\n", color.name_table_background + 1, color.name_table_background + 1);
 
 	CSS_PRINTF(".name_table th {\n"\
 			   "\tfont-weight: bold;\n"\
 			   "\tpadding: 5px;\n"\
-			   "\tbackground: %.7s;\n"\
+			   "\tbackground: %.7ls;\n"\
 			   "\tborder: none;\n"\
-			   "\tborder-bottom: 5px solid %.7s;\n"\
+			   "\tborder-bottom: 5px solid %.7ls;\n"\
 			   "}\n", color.name_table_background + 1, color.name_table_background + 1);
 
 	CSS_PRINTF(".name_table td {\n"\
 			   "\tpadding: 10px;\n"\
 			   "\tborder: none;\n"\
-			   "\tborder-bottom: 5px solid %.7s;\n"\
+			   "\tborder-bottom: 5px solid %.7ls;\n"\
 			   "}\n", color.name_table_background + 1);
 
 	CSS_PRINTF(".name_table tbody tr:nth-child(odd) {\n"\
-			   "\tbackground: %.7s;\n"\
+			   "\tbackground: %.7ls;\n"\
 			   "}\n", color.name_table_odd_tr + 1);
 
 	CSS_PRINTF(".name_table tbody tr:nth-child(even) {\n"\
-			   "\tbackground: %.7s;\n"\
+			   "\tbackground: %.7ls;\n"\
 			   "}\n", color.name_table_even_tr + 1);
 
 #undef CSS_PRINTF
@@ -354,7 +354,7 @@ BinaryTreeStatusCode BinaryTreeBashScript(Tree* tree, DumpLogInfo* dump_info) {
 	if (AMOUNT_OF_LAST_SYMBOLS)
 		fseek(html_file, -AMOUNT_OF_LAST_SYMBOLS, SEEK_END);
 
-	if (StrCmp(prev_info.file_name, tree->info.file_name) != 0 || prev_info.line != tree->info.line || StrCmp(prev_info.var_name, tree->info.name) != 0)
+	if (CharStrCmp(prev_info.file_name, tree->info.file_name) != 0 || prev_info.line != tree->info.line || CharStrCmp(prev_info.var_name, tree->info.name) != 0)
 		HTML_PRINTF("\t\t\t\t\t\t<b>Binary Tree[%p] born at \"%s\": %zu, name '%s'</b>\n", \
 					tree, (prev_info.file_name = tree->info.file_name), (prev_info.line = (size_t)tree->info.line), (prev_info.var_name = tree->info.name));
 
@@ -383,7 +383,7 @@ BinaryTreeStatusCode BinaryTreeGraphDump(Tree* tree, DumpLogInfo dump_info, IdNa
 	DOT_PRINTF("digraph {\n");
 
 	DOT_PRINTF("\tfontname = \"UbuntuMono\";\n");
-	DOT_PRINTF("\tbgcolor = %s;\n\n", color.dot_background);
+	DOT_PRINTF("\tbgcolor = %ls;\n\n", color.dot_background);
 
 	NodeGraphDump(tree->root, dot_file, &dump_info, id_name_table);
 
@@ -409,7 +409,7 @@ BinaryTreeStatusCode NodeGraphDump(Node_t* cur_root, FILE* dot_file, DumpLogInfo
 
 	DOT_PRINTF("\tnode%p [ shape = Mrecord; style = filled; ", cur_root);
 
-#define NODE_COLOR_PRINT(...) DOT_PRINTF("fillcolor = %s; color = %s; fontcolor = %s; label = \" { ", __VA_ARGS__);
+#define NODE_COLOR_PRINT(...) DOT_PRINTF("fillcolor = %ls; color = %ls; fontcolor = %ls; label = \" { ", __VA_ARGS__);
 
 	switch (cur_root->type) {
 		case UNW: 					{ NODE_COLOR_PRINT(color.unknown_what_node,			color.unknown_what_node_border,  		  color.node_font); break; }
@@ -435,7 +435,7 @@ BinaryTreeStatusCode NodeGraphDump(Node_t* cur_root, FILE* dot_file, DumpLogInfo
 				DOT_PRINTF("\\n%p ", node); 																							\
 				break;																													\
 			}																															\
-			case KEYWORD: 				{ DOT_PRINTF("%s\\n%p ", KeyWordsGetString(node->data.val_key_word), node); break; }			\
+			case KEYWORD: 				{ DOT_PRINTF("%ls\\n%p ", KeyWordsGetString(node->data.val_key_word), node); break; }			\
 			case FUNCTION_DEFINITION: { 																								\
 				PrintNString(dot_file, id_name_table->data[node->data.val_func_def].string, 											 \
 							id_name_table->data[node->data.val_func_def].length); 														\
@@ -455,7 +455,7 @@ BinaryTreeStatusCode NodeGraphDump(Node_t* cur_root, FILE* dot_file, DumpLogInfo
 	} while(0)
 
 	SPECIFIER_LABEL_PRINT(cur_root);
-	DOT_PRINTF("| TYPE: %s", GetNodeType(cur_root));
+	DOT_PRINTF("| TYPE: %ls", GetNodeType(cur_root));
 	DOT_PRINTF("| { <left> Left\\n");
 	SPECIFIER_LABEL_PRINT(cur_root->left);
 	DOT_PRINTF("| Parent\\n");
@@ -466,26 +466,26 @@ BinaryTreeStatusCode NodeGraphDump(Node_t* cur_root, FILE* dot_file, DumpLogInfo
 
 	if (cur_root->left) {
 		if (!IsRootUnknownWhat(cur_root->left)) {
-			DOT_PRINTF("\tnode%p:<left> -> node%p [ style = \"bold\"; color = %s; label = %s; ];\n", cur_root, cur_root->left, color.left_edge, labels.left_sub_arrow);
+			DOT_PRINTF("\tnode%p:<left> -> node%p [ style = \"bold\"; color = %ls; label = %ls; ];\n", cur_root, cur_root->left, color.left_edge, labels.left_sub_arrow);
 		}
 		NodeGraphDump(cur_root->left, dot_file, dump_info, id_name_table);
 	}
 	if (cur_root->right) {
 		NodeGraphDump(cur_root->right, dot_file, dump_info, id_name_table);
 		if (!IsRootUnknownWhat(cur_root->right))
-			DOT_PRINTF("\tnode%p:<right> -> node%p [ style = \"bold\"; color = %s; label = %s; ];\n", cur_root, cur_root->right, color.right_edge, labels.right_sub_arrow);
+			DOT_PRINTF("\tnode%p:<right> -> node%p [ style = \"bold\"; color = %ls; label = %ls; ];\n", cur_root, cur_root->right, color.right_edge, labels.right_sub_arrow);
 	}
 
 	if (dump_info->pointer)
-		DOT_PRINTF("\tnode%p [ fillcolor = %s; color = %s; fontcolor = %s; ];\n", dump_info->pointer, color.new_node, color.new_node_border, color.node_font);
+		DOT_PRINTF("\tnode%p [ fillcolor = %ls; color = %ls; fontcolor = %ls; ];\n", dump_info->pointer, color.new_node, color.new_node_border, color.node_font);
 
 	if (IsRootUnknownWhat(cur_root)) {
 		if (cur_root->parent && cur_root->parent->right == cur_root) {
-			DOT_PRINTF("\tnode%p:<right> -> node%p [ style = \"bold\"; color = %s; label = %s; ];\n",
+			DOT_PRINTF("\tnode%p:<right> -> node%p [ style = \"bold\"; color = %ls; label = %ls; ];\n",
 						cur_root->parent, cur_root, color.unknown_what_edge, labels.unknown_what_arrow);
 		}
 		else if (cur_root->parent && cur_root->parent->left == cur_root){
-			DOT_PRINTF("\tnode%p:<left> -> node%p [ style = \"bold\"; color = %s; label = %s; ];\n",
+			DOT_PRINTF("\tnode%p:<left> -> node%p [ style = \"bold\"; color = %ls; label = %ls; ];\n",
 						cur_root->parent, cur_root, color.unknown_what_edge, labels.unknown_what_arrow);
 		}
 	}

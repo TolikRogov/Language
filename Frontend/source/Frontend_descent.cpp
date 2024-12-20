@@ -273,12 +273,6 @@ Node_t* GetInput(FrontedDescent* descent) {
 		return NULL;
 	(*(descent->pc))++;
 
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != OPEN_ROUND)
-		LANGUAGE_SYNTAX_ERROR(descent);
-
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != CLOSE_ROUND)
-		LANGUAGE_SYNTAX_ERROR(descent);
-
 	return _INPUT();
 }
 
@@ -647,14 +641,8 @@ Node_t* GetPrintf(FrontedDescent* descent) {
 		return NULL;
 	(*(descent->pc))++;
 
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != OPEN_ROUND)
-		LANGUAGE_SYNTAX_ERROR(descent);
-
 	Node_t* node = GetExpression(descent);
 	if (!node)
-		LANGUAGE_SYNTAX_ERROR(descent);
-
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != CLOSE_ROUND)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
 	return node = _PRINTF(NULL, node);
@@ -901,6 +889,7 @@ BinaryTreeStatusCode CreateTreeFromFile(Tree* tree, IdNameTable* id_name_table, 
 	BinaryTreeStatusCode tree_status = TREE_NO_ERROR;
 
 	FILE* prog_file = fopen(PROG_FILE_, "r");
+	fwide(prog_file, 1);
 	if (!prog_file)
 		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
 
@@ -908,28 +897,27 @@ BinaryTreeStatusCode CreateTreeFromFile(Tree* tree, IdNameTable* id_name_table, 
 	stat(PROG_FILE_, &file_info);
 
 	size_t size = (size_t)file_info.st_size;
-	char* buffer = (char*)calloc(size, sizeof(char));
+	wchar_t* buffer = (wchar_t*)calloc(size, sizeof(wchar_t));
 	if (!buffer)
 		TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
 
-	size_t read_check = fread(buffer, sizeof(char), size, prog_file);
-	if (read_check != size)
-		TREE_ERROR_CHECK(TREE_READ_ERROR);
+	wchar_t c = 0;
+	size_t ip = 0;
+	while ((c = fgetwc(prog_file)) != EOF) { buffer[ip] = c; ip++; }
 
 	if (fclose(prog_file))
 		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
 
 #ifdef PRINT_DEBUG
-	for (size_t i = 0; i < size; i++) {
-		printf("%c", buffer[i]);
-	}
+	for (size_t i = 0; i < ip; i++) printf("%lc", buffer[i]);
+	printf("%zu\n", ip);
 #endif
 
 	lexer->buffer = buffer;
-	lexer->buffer_size = size;
+	lexer->buffer_size = ip;
 	size_t pc = 0;
 	FrontedDescent descent = {.lexer = lexer, .id_name_table = id_name_table, .pc = &pc, .cur_scope = -1};
-	LEXICAL_ANALYSIS(buffer, lexer, id_name_table, size);
+	LEXICAL_ANALYSIS(buffer, lexer, id_name_table, lexer->buffer_size);
 
 	tree->root = GetGrammar(&descent);
 	if (!tree->root)
@@ -949,7 +937,7 @@ Node_t* LanguageSyntaxError(FrontedDescent* descent) {
 
 	if (*(descent->pc) > descent->lexer->size) {
 		for (size_t i = 0; i < descent->lexer->buffer_size - 1; i++)
-			printf("%c", descent->lexer->buffer[i]);
+			printf("%lc", descent->lexer->buffer[i]);
 		printf(" " RED("<---") "\n");
 		if (fclose(stdout)) {}
 		return NULL;
@@ -986,7 +974,7 @@ Node_t* LanguageSyntaxError(FrontedDescent* descent) {
 				continue;
 			}
 
-			printf("%c", descent->lexer->buffer[i]);
+			printf("%lc", descent->lexer->buffer[i]);
 		}
 		if (fclose(stdout)) {}
 		return NULL;
@@ -996,12 +984,12 @@ Node_t* LanguageSyntaxError(FrontedDescent* descent) {
 
 		if (descent->lexer->tokens[*(descent->pc)].index == i) {
 			while (descent->lexer->buffer[i] != '\n')
-				printf("%c", descent->lexer->buffer[i++]);
+				printf("%lc", descent->lexer->buffer[i++]);
 			printf(" " RED("<---") "\n");
 			continue;
 		}
 
-		printf("%c", descent->lexer->buffer[i]);
+		printf("%lc", descent->lexer->buffer[i]);
 	}
 
 	if (fclose(stdout)) {}

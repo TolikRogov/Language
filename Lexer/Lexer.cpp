@@ -1,6 +1,6 @@
 #include "Lexer.hpp"
 
-BinaryTreeStatusCode SkipExtra(const char* buffer, size_t* token_start, size_t size) {
+BinaryTreeStatusCode SkipExtra(const wchar_t* buffer, size_t* token_start, size_t size) {
 
 	while (isspace(buffer[*token_start])) {
 		(*token_start)++;
@@ -78,16 +78,16 @@ BinaryTreeStatusCode LexerRealloc(Lexer* lexer) {
 	return TREE_NO_ERROR;
 }
 
-static const char* GetTokenStringType(NodeType type) {
+static const wchar_t* GetTokenStringType(NodeType type) {
 	switch (type) {
-		case NUMBER: 				return RET_STRING(NUMBER);
-		case IDENTIFIER: 			return RET_STRING(IDENTIFIER);
-		case KEYWORD:  				return RET_STRING(KEYWORD);
-		case FUNCTION_DEFINITION: 	return RET_STRING(FUNCTION_DEFINITION);
-		case PARAMETERS:			return RET_STRING(PARAMETERS);
-		case VAR_DECLARATION:		return RET_STRING(VAR_DECLARATION);
+		case NUMBER: 				return L"NUMBER";
+		case IDENTIFIER: 			return L"IDENTIFIER";
+		case KEYWORD:  				return L"KEYWORD";
+		case FUNCTION_DEFINITION: 	return L"FUNCTION_DEFINITION";
+		case PARAMETERS:			return L"PARAMETERS";
+		case VAR_DECLARATION:		return L"VAR_DECLARATION";
 		case UNW:
-		default:  return RET_STRING(UNW);
+		default:  return L"UNW";
 	}
 }
 
@@ -97,23 +97,23 @@ BinaryTreeStatusCode PrintTokenValue(Token* token, IdNameTable* id_name_table) {
 		case NUMBER: 				{ printf(GREEN("%lg"), token->data.val_num); break; }
 		case IDENTIFIER: {
 			for (size_t i = 0; i < id_name_table->data[token->data.val_id].length; i++)
-				printf(GREEN("%c"), id_name_table->data[token->data.val_id].string[i]);
+				printf(GREEN("%lc"), id_name_table->data[token->data.val_id].string[i]);
 			break;
 		}
-		case KEYWORD:  				{ printf(GREEN("%s"), KeyWordsGetString(token->data.val_key_word)); break; }
+		case KEYWORD:  				{ printf(GREEN("%ls"), KeyWordsGetString(token->data.val_key_word)); break; }
 		case FUNCTION_DEFINITION: {
 			for (size_t j = 0; j < id_name_table->data[token->data.val_func_def].length; j++)
-				printf(GREEN("%c"), id_name_table->data[token->data.val_func_def].string[j]);
+				printf(GREEN("%lc"), id_name_table->data[token->data.val_func_def].string[j]);
 			break;
 		}
 		case VAR_DECLARATION: {
 			for (size_t j = 0; j < id_name_table->data[token->data.val_decl_var].length; j++)
-				printf(GREEN("%c"), id_name_table->data[token->data.val_decl_var].string[j]);
+				printf(GREEN("%lc"), id_name_table->data[token->data.val_decl_var].string[j]);
 			break;
 		}
-		case PARAMETERS:		 	{ printf(GREEN("%s"), RET_STRING(PARAMETERS)); break; }
+		case PARAMETERS:		 	{ printf(GREEN("%ls"), L"PARAMETERS"); break; }
 		case UNW:
-		default:  					{ printf(GREEN("%s"), RET_STRING(UNW)); break; }
+		default:  					{ printf(GREEN("%ls"), L"UNW"); break; }
 	}
 	printf("\n");
 	return TREE_NO_ERROR;
@@ -124,12 +124,12 @@ BinaryTreeStatusCode PrintTokenValueGrammar(Token* token) {
 	switch (token->type) {
 		case NUMBER: 				{ printf(GREEN("%lg"), token->data.val_num); break; }
 		case IDENTIFIER: 			{ printf(GREEN("%zu"), token->data.val_id); break; }
-		case KEYWORD:  				{ printf(GREEN("%s"), KeyWordsGetString(token->data.val_key_word)); break; }
+		case KEYWORD:  				{ printf(GREEN("%ls"), KeyWordsGetString(token->data.val_key_word)); break; }
 		case FUNCTION_DEFINITION: 	{ printf(GREEN("%zu"), token->data.val_func_def); break; }
 		case VAR_DECLARATION: 		{ printf(GREEN("%zu"), token->data.val_decl_var); break; }
-		case PARAMETERS: 			{ printf(GREEN("%s"),  RET_STRING(PARAMETERS)); break; }
+		case PARAMETERS: 			{ printf(GREEN("%ls"),  L"PARAMETERS"); break; }
 		case UNW:
-		default:  { printf(GREEN("%s"), RET_STRING(UNW)); break; }
+		default:  { printf(GREEN("%ls"), L"UNW"); break; }
 	}
 	printf("\n");
 	return TREE_NO_ERROR;
@@ -146,7 +146,7 @@ BinaryTreeStatusCode PrintLexer(Lexer* lexer, IdNameTable* id_name_table) {
 	printf(BLUE("Lexer size:") " " GREEN("%zu") "\n", lexer->size);
 
 	for (size_t i = 0; i < lexer->capacity; i++) {
-		printf(BLUE("Lexer token[%.2zu]:") " type - " GREEN("%10s") " index - " GREEN("%5zu"), i, GetTokenStringType(lexer->tokens[i].type), lexer->tokens[i].index);
+		printf(BLUE("Lexer token[%.2zu]:") " type - " GREEN("%10ls") " index - " GREEN("%5zu"), i, GetTokenStringType(lexer->tokens[i].type), lexer->tokens[i].index);
 		printf(" value - ");
 		PrintTokenValue(&lexer->tokens[i], id_name_table);
 	}
@@ -154,12 +154,12 @@ BinaryTreeStatusCode PrintLexer(Lexer* lexer, IdNameTable* id_name_table) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode LexicalAnalysis(char* buffer, Lexer* lexer, IdNameTable* id_name_table, size_t size) {
+BinaryTreeStatusCode LexicalAnalysis(wchar_t* buffer, Lexer* lexer, IdNameTable* id_name_table, size_t size) {
 
 	BinaryTreeStatusCode tree_status = TREE_NO_ERROR;
 
 	size_t token_start = 0;
-	char* token_end_pointer = NULL;
+	wchar_t* token_end_pointer = NULL;
 	size_t token_end = 1;
 
 	while (true) {
@@ -198,7 +198,7 @@ BinaryTreeStatusCode LexicalAnalysis(char* buffer, Lexer* lexer, IdNameTable* id
 		if (op_find == 2)
 			continue;
 
-		Number_t number = strtod(buffer + token_start, &token_end_pointer);
+		Number_t number = wcstod(buffer + token_start, &token_end_pointer);
 		if (buffer + token_start != token_end_pointer) {
 			lexer->tokens[lexer->size].type = NUMBER;
 			lexer->tokens[lexer->size].data.val_num = number;

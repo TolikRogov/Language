@@ -1,16 +1,16 @@
 #include "KeyWords.hpp"
 
-const char* KeyWordsGetString(KeyWordNum key_word_number) {
+const wchar_t* KeyWordsGetString(KeyWordNum key_word_number) {
 
 	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
 		if (keywords[i].num == key_word_number)
 			return keywords[i].string;
 	}
 
-	return	RET_STRING(INVALID_KEY_WORD);
+	return	L"INVALID_KEY_WORD";
 }
 
-KeyWordNum KeyWordsGetKeyWordNum(const char* string) {
+KeyWordNum KeyWordsGetKeyWordNum(const wchar_t* string) {
 
 	for (size_t i = 0; keywords[i].num != AMOUNT_OF_KEYWORDS; i++) {
 		if (StrCmp(string, keywords[i].string) == 0)

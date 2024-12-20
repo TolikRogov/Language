@@ -101,6 +101,6 @@ Node_t* FindTreeRoot(Node_t* node);
 BinaryTreeStatusCode NodeParentChecker(Node_t* node);
 BinaryTreeStatusCode SetNodeValue(Node_t* node, Data_t data);
 BinaryTreeStatusCode NodePrintData(Node_t* node);
-const char* GetNodeType(Node_t* node);
+const wchar_t* GetNodeType(Node_t* node);
 BinaryTreeStatusCode ReplaceUnknownWhat(Node_t* node, Data_t data, NodeType type);
 Node_t* doCopySubtree(Node_t* node);

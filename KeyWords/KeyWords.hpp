@@ -5,6 +5,8 @@
 #define TOC '#'
 
 enum KeyWordNum {
+	STD_CLOSE_ROUND		= -3,
+	STD_OPEN_ROUND		= -2,
 	INVALID_KEY_WORD 	= -1,
 	CLOSE_ROUND		 	= 1,
 	OPEN_FIGURE		 	= 2,
@@ -48,10 +50,10 @@ enum KeyWordNum {
 
 struct KeyWord {
 	KeyWordNum num;
-	const char* string;
+	const wchar_t* string;
 };
 
-const char* KeyWordsGetString(KeyWordNum key_word_number);
-KeyWordNum KeyWordsGetKeyWordNum(const char* string);
+const wchar_t* KeyWordsGetString(KeyWordNum key_word_number);
+KeyWordNum KeyWordsGetKeyWordNum(const wchar_t* string);
 
 extern KeyWord keywords[];

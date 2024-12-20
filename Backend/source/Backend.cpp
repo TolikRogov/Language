@@ -1,6 +1,6 @@
 #include "Backend.hpp"
 
-#define MAIN "main"
+#define MAIN L"Путник"
 
 BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table) {
 
