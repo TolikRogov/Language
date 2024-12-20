@@ -9,9 +9,10 @@
 struct Backend {
 	IdNameTable* id_name_table;
 	FILE* asm_file;
-	size_t* tabs;
-	size_t* cnt_if;
-	size_t* cnt_while;
+	size_t tabs;
+	size_t cnt_if;
+	size_t cnt_while;
+	int cur_scope;
 };
 
 BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table);

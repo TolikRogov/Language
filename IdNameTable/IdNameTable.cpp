@@ -6,7 +6,7 @@ size_t NumberOfVariablesInSubtree(Node_t* node, IdNameTable* id_name_table) {
 			(node->right ? NumberOfVariablesInSubtree(node->right, id_name_table) : 0);
 }
 
-int CountOfGlobalVariables(IdNameTable* id_name_table) {
+int CountOfGlobals(IdNameTable* id_name_table) {
 
 	if (!id_name_table)
 		return -1;
@@ -14,6 +14,20 @@ int CountOfGlobalVariables(IdNameTable* id_name_table) {
 	int cnt = 0;
 	for (size_t i = 0; i < id_name_table->size; i++) {
 		if (id_name_table->data[i].global)
+			cnt++;
+	}
+
+	return cnt;
+}
+
+int CountOfGlobalVariables(IdNameTable* id_name_table) {
+
+	if (!id_name_table)
+		return -1;
+
+	int cnt = 0;
+	for (size_t i = 0; i < id_name_table->size; i++) {
+		if (id_name_table->data[i].global && id_name_table->data[i].type == ID_VAR)
 			cnt++;
 	}
 

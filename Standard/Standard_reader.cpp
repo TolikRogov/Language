@@ -225,6 +225,7 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 		id_name_table->data[id_num].scope_variables.data = (int*)calloc((size_t)cur_scope_size, sizeof(int));
 		if (!id_name_table->data[id_num].scope_variables.data)
 			TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
+
 		for (size_t j = 0; j < (size_t)cur_scope_size; j++) {
 			int local_id_num = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 			if (count_end == id_name_table->buffer + pc)

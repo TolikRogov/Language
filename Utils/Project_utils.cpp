@@ -60,11 +60,15 @@ int StrNCmp(const wchar_t* str1, const wchar_t* str2, int n1, int n2) {
 	if (!str1 || !str2)
 		return -1;
 
+	if (n1 != n2)
+		return -1;
+
 	int i = 0;
 	for (; *(str1 + i) != '\0' && *(str2 + i) != '\0' && i < n1 && i < n2; i++) {
 		if (*(str1 + i) != *(str2 + i))
-			break;
+			return -1;
 	}
+	i--;
 	return (*(str1 + i) - *(str2 + i));
 }
 

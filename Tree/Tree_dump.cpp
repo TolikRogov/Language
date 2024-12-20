@@ -142,7 +142,7 @@ BinaryTreeStatusCode IdNameTablePrint(IdNameTable* id_name_table) {
 		for (size_t j = 0; j < id_name_table->data[i].scope_variables.size; j++) {
 			PrintNString(html_file, id_name_table->data[id_name_table->data[i].scope_variables.data[j]].string,
 								   id_name_table->data[id_name_table->data[i].scope_variables.data[j]].length);
-			HTML_PRINTF(" ");
+			HTML_PRINTF("(%zu) ", j);
 		}
 		HTML_PRINTF("</td>\n");
 
