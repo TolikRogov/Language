@@ -250,6 +250,26 @@ BinaryTreeStatusCode LexicalAnalysis(wchar_t* buffer, Lexer* lexer, IdNameTable*
 		token_start = token_end;
 	}
 
+	for (size_t i = 0; i < lexer->size; i++) {
+		if ((lexer->tokens[i].type == KEYWORD && lexer->tokens[i].data.val_key_word != SUB) || lexer->tokens[i].type != KEYWORD)
+			continue;
+
+		if (i > 0 && lexer->tokens[i - 1].type == KEYWORD && lexer->tokens[i + 1].type == NUMBER) {
+			lexer->tokens[i].type = NUMBER;
+			lexer->tokens[i].data.val_num = lexer->tokens[i + 1].data.val_num * (-1);
+			for (size_t j = i + 1; j < lexer->size - 1; j++) {
+				lexer->tokens[j].type = lexer->tokens[j + 1].type;
+				switch (lexer->tokens[j + 1].type) {
+					case NUMBER: 		{ lexer->tokens[j].data.val_num 		= lexer->tokens[j + 1].data.val_num; 		break; }
+					case IDENTIFIER: 	{ lexer->tokens[j].data.val_id 			= lexer->tokens[j + 1].data.val_id; 		break; }
+					case KEYWORD: 		{ lexer->tokens[j].data.val_key_word	= lexer->tokens[j + 1].data.val_key_word; 	break; }
+					default: 			break;
+				}
+				lexer->tokens[j].index = lexer->tokens[j + 1].index;
+			}
+		}
+	}
+
 #ifdef PRINT_DEBUG
 		PrintLexer(lexer, id_name_table);
 		PrintIdNameTable(id_name_table);

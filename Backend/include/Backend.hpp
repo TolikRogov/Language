@@ -6,5 +6,13 @@
 #define PROC_DATA_DIR_ 	"../Processor/data/"
 #define ASM_FILE_		PROC_DATA_DIR_ "main.asm"
 
+struct Backend {
+	IdNameTable* id_name_table;
+	FILE* asm_file;
+	size_t* tabs;
+	size_t* cnt_if;
+	size_t* cnt_while;
+};
+
 BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table);
-BinaryTreeStatusCode WriteAssembleCode(Node_t* node, IdNameTable* id_name_table, FILE* asm_file);
+BinaryTreeStatusCode WriteAssembleCode(Node_t* node, Backend* backend);

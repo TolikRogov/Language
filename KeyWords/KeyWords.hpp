@@ -5,8 +5,8 @@
 #define TOC '#'
 
 enum KeyWordNum {
-	STD_CLOSE_ROUND		= -3,
-	STD_OPEN_ROUND		= -2,
+	STD_CLOSE_ROUND		= -4,
+	STD_OPEN_ROUND		= -3,
 	INVALID_KEY_WORD 	= -1,
 	CLOSE_ROUND		 	= 1,
 	OPEN_FIGURE		 	= 2,

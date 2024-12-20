@@ -18,7 +18,7 @@
 #define BLUE(str)		"\033[34;1m" str "\033[0m"
 #define TEAL(str)		"\033[36;1m" str "\033[0m"
 
-#define RET_STRING(val) (const wchar_t*)#val
+#define RET_STRING(val) #val
 
 #ifdef __APPLE__
 	#define OPEN	"open "
