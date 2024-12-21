@@ -482,4 +482,3 @@ BinaryTreeStatusCode WriteAssembleCode(Node_t* node, Backend* backend) {
 
 	return TREE_NO_ERROR;
 }
-

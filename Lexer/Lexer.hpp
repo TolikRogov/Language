@@ -49,6 +49,16 @@ struct Lexer {
 	size_t buffer_size;
 };
 
+struct LexicalAnalysis_t {
+	IdNameTable* id_name_table;
+	size_t size;
+	size_t* token_start;
+	size_t* token_end;
+	int* op_find;
+	int* var_find;
+	wchar_t** token_end_pointer;
+};
+
 const size_t LEXER_DEFAULT_CAPACITY = 4;
 
 BinaryTreeStatusCode LexerCtor(Lexer* lexer);
