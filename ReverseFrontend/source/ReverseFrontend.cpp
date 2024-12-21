@@ -19,6 +19,7 @@ static BinaryTreeStatusCode PullAssignment(Node_t* node, ReverseFrontend* revfro
 static BinaryTreeStatusCode PullPrintf(Node_t* node, ReverseFrontend* revfront);
 static BinaryTreeStatusCode PullInput(Node_t* node, ReverseFrontend* revfront);
 static BinaryTreeStatusCode PullKeyWordString(Node_t* node, ReverseFrontend* revfront);
+static BinaryTreeStatusCode PullAbort(Node_t* node, ReverseFrontend* revfront);
 
 BinaryTreeStatusCode RunReverseFrontend(Tree* tree, IdNameTable* id_name_table) {
 
@@ -68,6 +69,7 @@ BinaryTreeStatusCode WriteProgram(Node_t* node, ReverseFrontend* revfront) {
 				case SIN: 			{ PullAloneFunctions(node, revfront); 		break; }
 				case INIT_TYPE:		{ PullKeyWordString(node, revfront);		break; }
 				case COMMA_OP:		{ PullCommaOp(node, revfront);				break; }
+				case ABORT:			{ PullAbort(node, revfront);				break; }
 				default: return TREE_NO_ERROR;
 			}
 			break;
@@ -91,6 +93,17 @@ BinaryTreeStatusCode PullSequentialOp(Node_t* node, ReverseFrontend* revfront) {
 	WriteProgram(node->left, revfront);
 	fprintf(revfront->prog_file, "%ls\n", KeyWordsGetString(node->data.val_key_word));
 	WriteProgram(node->right, revfront);
+
+#undef TABS
+
+	return TREE_NO_ERROR;
+}
+
+BinaryTreeStatusCode PullAbort(Node_t* node, ReverseFrontend* revfront) {
+
+#define TABS { for (size_t i = 0; i < revfront->tabs; i++) {fprintf(revfront->prog_file, "\t");} }
+
+	TABS fprintf(revfront->prog_file, "%ls ", KeyWordsGetString(node->data.val_key_word));
 
 #undef TABS
 

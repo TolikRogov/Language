@@ -22,6 +22,7 @@ static BinaryTreeStatusCode PullSequentialOp(Node_t* node, Backend* backend);
 static BinaryTreeStatusCode PullAssignment(Node_t* node, Backend* backend);
 static BinaryTreeStatusCode PullInput(Node_t* node, Backend* backend);
 static BinaryTreeStatusCode PullPrintf(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode PullAbort(Node_t* node, Backend* backend);
 
 BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table) {
 
@@ -73,6 +74,7 @@ Commands GetCmdByKeyWordType(KeyWordNum key_word_num) {
 		case DIV:			return CMD_DIV;
 		case SIN:			return CMD_SIN;
 		case RETURN:		return CMD_RET;
+		case ABORT:			return CMD_HLT;
 		default:			return COUNT_OF_COMMANDS;
 	}
 }
@@ -84,6 +86,17 @@ BinaryTreeStatusCode PullComparisons(Node_t* node, Backend* backend) {
 	WriteAssembleCode(node->left, backend);
 	WriteAssembleCode(node->right, backend);
 	TABS fprintf(backend->asm_file, "%s ", array_commands[GetCmdByKeyWordType(node->data.val_key_word)].cmd_name);
+
+#undef TABS
+
+	return TREE_NO_ERROR;
+}
+
+BinaryTreeStatusCode PullAbort(Node_t* node, Backend* backend) {
+
+#define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
+
+	TABS fprintf(backend->asm_file, "%s\n", array_commands[GetCmdByKeyWordType(node->data.val_key_word)].cmd_name);
 
 #undef TABS
 
@@ -171,19 +184,25 @@ BinaryTreeStatusCode PullFunctionDefinition(Node_t* node, Backend* backend) {
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 #define ASM_PRINTF(...) fprintf(backend->asm_file, __VA_ARGS__);
 
+	static int func_num = 0;
+
 	Identifier* cur_func = &backend->id_name_table->data[node->data.val_func_def];
 	int old_scope = backend->cur_scope;
 	backend->cur_scope = (int)node->data.val_func_def;
 
-	if (StrNCmp(MAIN, cur_func->string, StrLen(MAIN), (int)cur_func->length) == 0) {
+	if (!func_num) {
 		ASM_PRINTF("#bx - amount of global variables default\n");
 			ASM_PRINTF("%s %d\n", 	array_commands[CMD_PUSH].cmd_name, 	CountOfGlobalVariables(backend->id_name_table));
 			ASM_PRINTF("%s %s\n", 	array_commands[CMD_POP].cmd_name, 	STACK_FRAME_REGISTER);
 			ASM_PRINTF("%s %s\n\n", array_commands[CMD_PUSH].cmd_name, 	STACK_FRAME_REGISTER);
 
 		ASM_PRINTF("#main\n");
-			ASM_PRINTF("%s %ls:\n", array_commands[CMD_CALL].cmd_name, MAIN);
+			ASM_PRINTF("%s ", array_commands[CMD_CALL].cmd_name);
+			PrintNString(backend->asm_file, cur_func->string, cur_func->length);
+			ASM_PRINTF(":\n");
 			ASM_PRINTF("%s\n\n", 	array_commands[CMD_HLT].cmd_name);
+
+		func_num = 1;
 	}
 
 	TABS PrintNString(backend->asm_file, cur_func->string, cur_func->length);
@@ -444,6 +463,7 @@ BinaryTreeStatusCode WriteAssembleCode(Node_t* node, Backend* backend) {
 				case RETURN:		{ PullReturn(node, backend); 				break; }
 				case COS:
 				case SIN: 			{ PullAloneFunctions(node, backend); 		break; }
+				case ABORT:			{ PullAbort(node, backend);					break; }
 				default: return TREE_NO_ERROR;
 			}
 			break;
