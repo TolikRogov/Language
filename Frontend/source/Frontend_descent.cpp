@@ -28,14 +28,16 @@ Node_t* GetIdVariable(FrontedDescent* descent);
 Node_t* GetIdFunction(FrontedDescent* descent);
 Node_t* GetNumber(FrontedDescent* descent);
 
+#define CUR_TOKEN descent->lexer->tokens[(*(descent->pc))]
+
 Node_t* GetNumber(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Number (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-	if (descent->lexer->tokens[*(descent->pc)].type == NUMBER)
+	if (CUR_TOKEN.type == NUMBER)
 		return _NUM(descent->lexer->tokens[(*(descent->pc))++].data.val_num);
 	else
 		return NULL;
@@ -46,16 +48,17 @@ Node_t* GetIdVariable(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("IdVariable (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-	if (descent->lexer->tokens[*(descent->pc)].type != IDENTIFIER)
+	if (CUR_TOKEN.type != IDENTIFIER)
 		return NULL;
 
 	Identifier* cur_id = &descent->id_name_table->data[descent->lexer->tokens[(*(descent->pc))].data.val_id];
 	Identifier* cur_scope = &descent->id_name_table->data[descent->cur_scope];
 
-	if (descent->lexer->tokens[*(descent->pc) + 1].type == KEYWORD && descent->lexer->tokens[(*(descent->pc)) + 1].data.val_key_word == OPEN_ROUND)
+	if (descent->lexer->tokens[*(descent->pc) + 1].type == KEYWORD &&
+		descent->lexer->tokens[*(descent->pc) + 1].data.val_key_word == OPEN_ROUND)
 		return NULL;
 
 #ifdef PRINT_DEBUG
@@ -73,7 +76,8 @@ Node_t* GetIdVariable(FrontedDescent* descent) {
 		return _ID(descent->lexer->tokens[(*(descent->pc))++].data.val_id);
 	}
 
-	if (descent->lexer->tokens[*(descent->pc) - 1].type == KEYWORD && descent->lexer->tokens[(*(descent->pc)) - 1].data.val_key_word == INIT_TYPE) {
+	if (descent->lexer->tokens[*(descent->pc) - 1].type == KEYWORD &&
+		descent->lexer->tokens[*(descent->pc) - 1].data.val_key_word == INIT_TYPE) {
 		if (!FindLocalVariableInScope(cur_scope, cur_id) && cur_id->global == 0) {
 			cur_id->define_status = 1;
 
@@ -99,19 +103,23 @@ Node_t* GetIdFunction(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("IdFunction (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-	if (descent->lexer->tokens[*(descent->pc)].type != IDENTIFIER)
+	if (CUR_TOKEN.type != IDENTIFIER)
 		return NULL;
 
 	Identifier* cur_id = &descent->id_name_table->data[descent->lexer->tokens[(*(descent->pc))].data.val_id];
 
-	if (descent->lexer->tokens[*(descent->pc) + 1].type == KEYWORD && descent->lexer->tokens[(*(descent->pc)) + 1].data.val_key_word != OPEN_ROUND)
+	if (descent->lexer->tokens[*(descent->pc) + 1].type == KEYWORD &&
+		descent->lexer->tokens[*(descent->pc) + 1].data.val_key_word != OPEN_ROUND)
 		return NULL;
+
 	cur_id->type = ID_FUNCTION;
 	cur_id->global = 1;
-	if (descent->lexer->tokens[*(descent->pc) - 1].type == KEYWORD && descent->lexer->tokens[(*(descent->pc)) - 1].data.val_key_word != INIT_TYPE)
+
+	if (descent->lexer->tokens[*(descent->pc) - 1].type == KEYWORD &&
+		descent->lexer->tokens[*(descent->pc) - 1].data.val_key_word != INIT_TYPE)
 		return _ID(descent->lexer->tokens[(*(descent->pc))++].data.val_id);
 
 	switch (cur_id->define_status) {
@@ -140,24 +148,24 @@ Node_t* GetOperation(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Operation (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node = NULL;
 
-	if (descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if (CUR_TOKEN.type != KEYWORD)
 		return NULL;
 
 	KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))++].data.val_key_word;
 
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[*(descent->pc)].data.val_key_word == OPEN_ROUND) {
+	if (CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word == OPEN_ROUND) {
 		(*(descent->pc))++;
 		node = GetExpression(descent);
 		if (!node)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
-		if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[*(descent->pc)].data.val_key_word != CLOSE_ROUND) ||
-			 descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+		if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != CLOSE_ROUND) ||
+			 CUR_TOKEN.type != KEYWORD)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
 		(*(descent->pc))++;
@@ -178,27 +186,27 @@ Node_t* GetCallParameters(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("CallParameters (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-#define TERMINALS_CHECKER(terminal) {											 	 														 \
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)	\
-		LANGUAGE_SYNTAX_ERROR(descent);																										\
+#define TERMINALS_CHECKER(terminal) {												 							 \
+	if (CUR_TOKEN.type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)	\
+		LANGUAGE_SYNTAX_ERROR(descent);																			\
 }
 	Node_t* node = GetExpression(descent);
 	if (!node)
 		return _COMMA_OP(NULL, NULL);
-	node = _COMMA_OP(node, NULL);
+	node = _COMMA_OP(NULL, node);
 
 	Node_t* prev_node = node;
-	while (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != CLOSE_ROUND) {
+	while (CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != CLOSE_ROUND) {
 		TERMINALS_CHECKER(COMMA_OP);
 		Node_t* node2 = GetExpression(descent);
 		if (!node2)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
-		node2 = _COMMA_OP(node2, NULL);
-		prev_node->right = node2;
+		node2 = _COMMA_OP(NULL, node2);
+		prev_node->left = node2;
 		node2->parent =  prev_node;
 		prev_node = node2;
 	}
@@ -212,12 +220,12 @@ Node_t* GetCall(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Call (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-#define TERMINALS_CHECKER(terminal) {									 			 														 \
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)	\
-		LANGUAGE_SYNTAX_ERROR(descent);																										\
+#define TERMINALS_CHECKER(terminal) {									 		 								 \
+	if (CUR_TOKEN.type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)	\
+		LANGUAGE_SYNTAX_ERROR(descent);																			\
 }
 
 	Node_t* node = GetIdFunction(descent);
@@ -242,14 +250,14 @@ Node_t* GetPower(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Power (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node1 = GetPriority(descent);
 	if (!node1)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	while (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[*(descent->pc)].data.val_key_word == POW) {
+	while (CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word == POW) {
 		(*(descent->pc))++;
 		Node_t* node2 = GetPriority(descent);
 		if (!node2)
@@ -265,11 +273,11 @@ Node_t* GetInput(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Input (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != INPUT) ||
-		descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != INPUT) ||
+		CUR_TOKEN.type != KEYWORD)
 		return NULL;
 	(*(descent->pc))++;
 
@@ -280,19 +288,19 @@ Node_t* GetPriority(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Priority (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node = NULL;
 
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[*(descent->pc)].data.val_key_word == OPEN_ROUND) {
+	if (CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word == OPEN_ROUND) {
 		(*(descent->pc))++;
 		node = GetExpression(descent);
 		if (!node)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
-		if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[*(descent->pc)].data.val_key_word != CLOSE_ROUND) ||
-			 descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+		if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != CLOSE_ROUND) ||
+			 CUR_TOKEN.type != KEYWORD)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
 		(*(descent->pc))++;
@@ -321,15 +329,15 @@ Node_t* GetTerminator(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Terminator (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node1 = GetPower(descent);
 	if (!node1)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	while (descent->lexer->tokens[*(descent->pc)].type == KEYWORD &&
-		   (descent->lexer->tokens[*(descent->pc)].data.val_key_word == MUL || descent->lexer->tokens[*(descent->pc)].data.val_key_word == DIV)) {
+	while (CUR_TOKEN.type == KEYWORD &&
+		   (CUR_TOKEN.data.val_key_word == MUL || CUR_TOKEN.data.val_key_word == DIV)) {
 		KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))++].data.val_key_word;
 		Node_t* node2 = GetPower(descent);
 		if (!node2)
@@ -348,15 +356,15 @@ Node_t* GetExpression(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Expression (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node1 = GetTerminator(descent);
 	if (!node1)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	while (descent->lexer->tokens[*(descent->pc)].type == KEYWORD &&
-		   (descent->lexer->tokens[*(descent->pc)].data.val_key_word == ADD || descent->lexer->tokens[*(descent->pc)].data.val_key_word == SUB)) {
+	while (CUR_TOKEN.type == KEYWORD &&
+		   (CUR_TOKEN.data.val_key_word == ADD || CUR_TOKEN.data.val_key_word == SUB)) {
 		KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))++].data.val_key_word;
 		Node_t* node2 = GetTerminator(descent);
 		if (!node2)
@@ -375,15 +383,15 @@ Node_t* GetAssignment(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Assignment (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node = GetIdVariable(descent);
 	if (!node)
 		return NULL;
 
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != ASSIGNMENT)
-		|| descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != ASSIGNMENT)
+		|| CUR_TOKEN.type != KEYWORD)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
 	(*descent->pc)++;
@@ -398,11 +406,11 @@ Node_t* GetVariableDeclaration(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("VarDeclaration (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != INIT_TYPE) ||
-		 descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != INIT_TYPE) ||
+		 CUR_TOKEN.type != KEYWORD)
 		return NULL;
 
 	(*(descent->pc))++;
@@ -410,7 +418,7 @@ Node_t* GetVariableDeclaration(FrontedDescent* descent) {
 	if (!node)
 		return NULL;
 
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != ASSIGNMENT)
+	if (CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != ASSIGNMENT)
 		return node = _VAR_DEC(node->data.val_id, _INIT_TYPE(), node);
 
 	(*(descent->pc))++;
@@ -425,14 +433,14 @@ Node_t* GetComparison(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Comparison (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word == NOT)) {
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word == NOT)) {
 		(*descent->pc)++;
 
-		if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != OPEN_ROUND) ||
-		 	 descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+		if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != OPEN_ROUND) ||
+		 	 CUR_TOKEN.type != KEYWORD)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
 		(*descent->pc)++;
@@ -440,8 +448,8 @@ Node_t* GetComparison(FrontedDescent* descent) {
 		if (!node)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
-		if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != CLOSE_ROUND) ||
-		 	 descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+		if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != CLOSE_ROUND) ||
+		 	 CUR_TOKEN.type != KEYWORD)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
 		(*descent->pc)++;
@@ -452,7 +460,7 @@ Node_t* GetComparison(FrontedDescent* descent) {
 	if (!node1)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	if (descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if (CUR_TOKEN.type != KEYWORD)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
 	KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))++].data.val_key_word;
@@ -476,19 +484,19 @@ Node_t* GetLogicalPriority(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("LogicalPriority (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node = NULL;
 
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[*(descent->pc)].data.val_key_word == OPEN_ROUND) {
+	if (CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word == OPEN_ROUND) {
 		(*(descent->pc))++;
 		node = GetCondition(descent);
 		if (!node)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
-		if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[*(descent->pc)].data.val_key_word != CLOSE_ROUND) ||
-			 descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+		if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != CLOSE_ROUND) ||
+			 CUR_TOKEN.type != KEYWORD)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
 		(*(descent->pc))++;
@@ -505,14 +513,14 @@ Node_t* GetAnd(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("And (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node1 = GetLogicalPriority(descent);
 	if (!node1)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	while (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[*(descent->pc)].data.val_key_word == AND) {
+	while (CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word == AND) {
 		(*(descent->pc))++;
 		Node_t* node2 = GetLogicalPriority(descent);
 		if (!node2)
@@ -528,14 +536,14 @@ Node_t* GetCondition(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Condition (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node1 = GetAnd(descent);
 	if (!node1)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	while (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[*(descent->pc)].data.val_key_word == OR) {
+	while (CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word == OR) {
 		(*(descent->pc))++;
 		Node_t* node2 = GetAnd(descent);
 		if (!node2)
@@ -551,17 +559,17 @@ Node_t* GetStatement(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Statement (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-#define TERMINALS_CHECKER(terminal) {									 			 														 \
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)	\
-		LANGUAGE_SYNTAX_ERROR(descent);																										\
+#define TERMINALS_CHECKER(terminal) {									 			 							 \
+	if (CUR_TOKEN.type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)	\
+		LANGUAGE_SYNTAX_ERROR(descent);																			\
 }
 
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD &&
-		(descent->lexer->tokens[*(descent->pc)].data.val_key_word != IF && descent->lexer->tokens[*(descent->pc)].data.val_key_word != WHILE)) ||
-		descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD &&
+		(CUR_TOKEN.data.val_key_word != IF && CUR_TOKEN.data.val_key_word != WHILE)) ||
+		CUR_TOKEN.type != KEYWORD)
 		return NULL;
 
 	KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))].data.val_key_word;
@@ -583,8 +591,8 @@ Node_t* GetStatement(FrontedDescent* descent) {
 	node2 = _SEQUENTIAL_OP(node2, NULL);
 
 	Node_t* prev_node = node2;
-	while ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != CLOSE_FIGURE)
-		   || descent->lexer->tokens[*(descent->pc)].type != KEYWORD) {
+	while ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != CLOSE_FIGURE)
+		   || CUR_TOKEN.type != KEYWORD) {
 		Node_t* node3 = GetOperator(descent);
 		if (!node3)
 			LANGUAGE_SYNTAX_ERROR(descent);
@@ -614,11 +622,11 @@ Node_t* GetReturn(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Return (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != RETURN) ||
-		descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != RETURN) ||
+		CUR_TOKEN.type != KEYWORD)
 		return NULL;
 
 	(*(descent->pc))++;
@@ -633,11 +641,11 @@ Node_t* GetPrintf(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Printf (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != PRINTF) ||
-		descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != PRINTF) ||
+		CUR_TOKEN.type != KEYWORD)
 		return NULL;
 	(*(descent->pc))++;
 
@@ -652,10 +660,10 @@ Node_t* GetAloneOperator(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("AloneOperator (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-	if (descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if (CUR_TOKEN.type != KEYWORD)
 		return NULL;
 
 	KeyWordNum key_word = descent->lexer->tokens[(*(descent->pc))++].data.val_key_word;
@@ -672,7 +680,7 @@ Node_t* GetOperator(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Operator (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* node = NULL;
@@ -702,34 +710,34 @@ Node_t* GetDefinitionParameters(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("DefinitionParameters (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-#define TERMINALS_CHECKER(terminal) {									 		 	 															 \
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal) 	\
-		LANGUAGE_SYNTAX_ERROR(descent);																											\
+#define TERMINALS_CHECKER(terminal) {									 		 	 							 \
+	if (CUR_TOKEN.type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal) 	\
+		LANGUAGE_SYNTAX_ERROR(descent);																			\
 }
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != INIT_TYPE) ||
-		descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != INIT_TYPE) ||
+		CUR_TOKEN.type != KEYWORD)
 		return _COMMA_OP(NULL, NULL);
 
 	(*(descent->pc))++;
 	Node_t* node = GetIdVariable(descent);
 	if (!node)
 		LANGUAGE_SYNTAX_ERROR(descent);
-	node = _COMMA_OP(_VAR_DEC(node->data.val_id, _INIT_TYPE(), node), NULL);
+	node = _COMMA_OP(NULL, _VAR_DEC(node->data.val_id, _INIT_TYPE(), node));
 
 	Node_t* prev_node = node;
-	while ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != CLOSE_ROUND) ||
-			descent->lexer->tokens[*(descent->pc)].type != KEYWORD) {
+	while ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != CLOSE_ROUND) ||
+			CUR_TOKEN.type != KEYWORD) {
 		TERMINALS_CHECKER(COMMA_OP);
 		TERMINALS_CHECKER(INIT_TYPE);
 		Node_t* node2 = GetIdVariable(descent);
 		if (!node2)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
-		node2 = _COMMA_OP(_VAR_DEC(node2->data.val_id, _INIT_TYPE(), node2), NULL);
-		prev_node->right = node2;
+		node2 = _COMMA_OP(NULL, _VAR_DEC(node2->data.val_id, _INIT_TYPE(), node2));
+		prev_node->left = node2;
 		node2->parent = prev_node;
 		prev_node = node2;
 	}
@@ -743,15 +751,15 @@ Node_t* GetFunctionDefinition(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("FunctionDefinition (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
-#define TERMINALS_CHECKER(terminal) {									 			 														 \
-	if (descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)	\
-		LANGUAGE_SYNTAX_ERROR(descent);																										\
+#define TERMINALS_CHECKER(terminal) {									 			 							 \
+	if (CUR_TOKEN.type == KEYWORD && descent->lexer->tokens[(*(descent->pc))++].data.val_key_word != terminal)	\
+		LANGUAGE_SYNTAX_ERROR(descent);																			\
 }
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != INIT_TYPE) ||
-		descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != INIT_TYPE) ||
+		CUR_TOKEN.type != KEYWORD)
 		return NULL;
 
 	(*descent->pc)++;
@@ -777,22 +785,22 @@ Node_t* GetFunctionDefinition(FrontedDescent* descent) {
 	if (!node3)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != SEQUENTIAL_OP) ||
-		descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != SEQUENTIAL_OP) ||
+		CUR_TOKEN.type != KEYWORD)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
 	(*descent->pc)++;
 	node3 = _SEQUENTIAL_OP(node3, NULL);
 
 	Node_t* prev_node = node3;
-	while ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != CLOSE_FIGURE) ||
-			descent->lexer->tokens[*(descent->pc)].type != KEYWORD) {
+	while ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != CLOSE_FIGURE) ||
+			CUR_TOKEN.type != KEYWORD) {
 		Node_t* node4 = GetOperator(descent);
 		if (!node4)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
-		if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != SEQUENTIAL_OP) ||
-			descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+		if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != SEQUENTIAL_OP) ||
+			CUR_TOKEN.type != KEYWORD)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
 		(*descent->pc)++;
@@ -816,7 +824,7 @@ Node_t* GetGrammar(FrontedDescent* descent) {
 
 #ifdef PRINT_DEBUG
 	printf("Grammar (%zu): ", *(descent->pc));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 #endif
 
 	Node_t* global_node = NULL;
@@ -825,8 +833,8 @@ Node_t* GetGrammar(FrontedDescent* descent) {
 		if (prev_global_node == NULL)
 			break;
 
-		if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != SEQUENTIAL_OP) ||
-			descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+		if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != SEQUENTIAL_OP) ||
+			CUR_TOKEN.type != KEYWORD)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
 		(*descent->pc)++;
@@ -846,8 +854,8 @@ Node_t* GetGrammar(FrontedDescent* descent) {
 	if (!node)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
-	if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != SEQUENTIAL_OP) ||
-		descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+	if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != SEQUENTIAL_OP) ||
+		CUR_TOKEN.type != KEYWORD)
 		LANGUAGE_SYNTAX_ERROR(descent);
 
 	(*descent->pc)++;
@@ -859,8 +867,8 @@ Node_t* GetGrammar(FrontedDescent* descent) {
 		if (!node2)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
-		if ((descent->lexer->tokens[*(descent->pc)].type == KEYWORD && descent->lexer->tokens[(*(descent->pc))].data.val_key_word != SEQUENTIAL_OP) ||
-			descent->lexer->tokens[*(descent->pc)].type != KEYWORD)
+		if ((CUR_TOKEN.type == KEYWORD && CUR_TOKEN.data.val_key_word != SEQUENTIAL_OP) ||
+			CUR_TOKEN.type != KEYWORD)
 			LANGUAGE_SYNTAX_ERROR(descent);
 
 		(*descent->pc)++;
@@ -933,7 +941,7 @@ BinaryTreeStatusCode CreateTreeFromFile(Tree* tree, IdNameTable* id_name_table, 
 Node_t* LanguageSyntaxError(FrontedDescent* descent) {
 
 	printf(RED("Lexer token[%zu]: "), (*(descent->pc)));
-	PrintTokenValue(&descent->lexer->tokens[*(descent->pc)], descent->id_name_table);
+	PrintTokenValue(&CUR_TOKEN, descent->id_name_table);
 
 	if (*(descent->pc) > descent->lexer->size) {
 		for (size_t i = 0; i < descent->lexer->buffer_size - 1; i++)
@@ -982,7 +990,7 @@ Node_t* LanguageSyntaxError(FrontedDescent* descent) {
 
 	for (size_t i = 0; i < descent->lexer->buffer_size; i++) {
 
-		if (descent->lexer->tokens[*(descent->pc)].index == i) {
+		if (CUR_TOKEN.index == i) {
 			while (descent->lexer->buffer[i] != '\n')
 				printf("%lc", descent->lexer->buffer[i++]);
 			printf(" " RED("<---") "\n");
@@ -995,3 +1003,5 @@ Node_t* LanguageSyntaxError(FrontedDescent* descent) {
 	if (fclose(stdout)) {}
 	return NULL;
 }
+
+#undef CUR_TOKEN

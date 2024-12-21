@@ -138,7 +138,7 @@ BinaryTreeStatusCode IdNameTablePrint(IdNameTable* id_name_table) {
 		PrintNString(html_file, id_name_table->data[i].string, id_name_table->data[i].length);
 		HTML_PRINTF("</td>\n");
 
-		HTML_PRINTF("\t\t\t\t<td>");
+		HTML_PRINTF("\t\t\t\t<td>%zu: ", id_name_table->data[i].scope_variables.size);
 		for (size_t j = 0; j < id_name_table->data[i].scope_variables.size; j++) {
 			PrintNString(html_file, id_name_table->data[id_name_table->data[i].scope_variables.data[j]].string,
 								   id_name_table->data[id_name_table->data[i].scope_variables.data[j]].length);

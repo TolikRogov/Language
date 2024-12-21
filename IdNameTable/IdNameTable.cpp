@@ -6,6 +6,16 @@ size_t NumberOfVariablesInSubtree(Node_t* node, IdNameTable* id_name_table) {
 			(node->right ? NumberOfVariablesInSubtree(node->right, id_name_table) : 0);
 }
 
+int GetLocalNumberOfVariable(IdNameTable* id_name_table, int scope, int var_num) {
+
+	for (int i = 0; i < (int)id_name_table->data[scope].scope_variables.size; i++) {
+		if (id_name_table->data[scope].scope_variables.data[i] == var_num)
+			return i;
+	}
+
+	return -1;
+}
+
 int CountOfGlobals(IdNameTable* id_name_table) {
 
 	if (!id_name_table)

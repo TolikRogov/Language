@@ -63,3 +63,4 @@ BinaryTreeStatusCode ScopeLocalVariablesRealloc(Identifier* scope);
 int CountOfGlobals(IdNameTable* id_name_table);
 int CountOfGlobalVariables(IdNameTable* id_name_table);
 size_t NumberOfVariablesInSubtree(Node_t* node, IdNameTable* id_name_table);
+int GetLocalNumberOfVariable(IdNameTable* id_name_table, int scope, int var_num);

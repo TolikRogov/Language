@@ -17,3 +17,6 @@ struct Backend {
 
 BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table);
 BinaryTreeStatusCode WriteAssembleCode(Node_t* node, Backend* backend);
+
+const char* GetCommentByKeyWordType(KeyWordNum key_word_num);
+Commands GetCmdByKeyWordType(KeyWordNum key_word_num);
