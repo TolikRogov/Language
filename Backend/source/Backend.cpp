@@ -59,18 +59,21 @@ const char* GetCommentByKeyWordType(KeyWordNum key_word_num) {
 
 Commands GetCmdByKeyWordType(KeyWordNum key_word_num) {
 	switch (key_word_num) {
-		case ABOVE: 	return CMD_JBE;
-		case EQUAL:		return CMD_JNE;
-		case INPUT: 	return CMD_IN;
-		case PRINTF:	return CMD_OUT;
-		case ADD:		return CMD_ADD;
-		case SUB:		return CMD_SUB;
-		case MUL:		return CMD_MUL;
-		case SQRT:		return CMD_SQRT;
-		case DIV:		return CMD_DIV;
-		case SIN:		return CMD_SIN;
-		case RETURN:	return CMD_RET;
-		default:		return COUNT_OF_COMMANDS;
+		case ABOVE: 		return CMD_JBE;
+		case EQUAL:			return CMD_JNE;
+		case NOT_EQUAL:		return CMD_JE;
+		case BELOW_EQUAL: 	return CMD_JA;
+		case ABOVE_EQUAL:	return CMD_JB;
+		case INPUT: 		return CMD_IN;
+		case PRINTF:		return CMD_OUT;
+		case ADD:			return CMD_ADD;
+		case SUB:			return CMD_SUB;
+		case MUL:			return CMD_MUL;
+		case SQRT:			return CMD_SQRT;
+		case DIV:			return CMD_DIV;
+		case SIN:			return CMD_SIN;
+		case RETURN:		return CMD_RET;
+		default:			return COUNT_OF_COMMANDS;
 	}
 }
 
@@ -422,6 +425,10 @@ BinaryTreeStatusCode WriteAssembleCode(Node_t* node, Backend* backend) {
 		case KEYWORD: {
 			switch (node->data.val_key_word) {
 				case EQUAL:
+				case BELOW:
+				case NOT_EQUAL:
+				case BELOW_EQUAL:
+				case ABOVE_EQUAL:
 				case ABOVE: 		{ PullComparisons(node, backend); 			break; }
 				case SEQUENTIAL_OP: { PullSequentialOp(node, backend); 			break; }
 				case IF: 			{ PullIf(node, backend); 					break; }
