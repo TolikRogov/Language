@@ -65,6 +65,7 @@ Commands GetCmdByKeyWordType(KeyWordNum key_word_num) {
 		case NOT_EQUAL:		return CMD_JE;
 		case BELOW_EQUAL: 	return CMD_JA;
 		case ABOVE_EQUAL:	return CMD_JB;
+		case BELOW:			return CMD_JAE;
 		case INPUT: 		return CMD_IN;
 		case PRINTF:		return CMD_OUT;
 		case ADD:			return CMD_ADD;
@@ -297,7 +298,7 @@ BinaryTreeStatusCode PullCallParameters(Node_t* node, Backend* backend) {
 	TABS ASM_PRINTF("#push previous value of stack frame register before new call\n");
 		TABS ASM_PRINTF("%s %s\n\n", array_commands[CMD_PUSH].cmd_name, STACK_FRAME_REGISTER);
 
-	PullCommaOp(node->left->left, backend);
+	PullCommaOp(node->left, backend);
 
 	TABS ASM_PRINTF("#stack frame register change value\n");
 		TABS ASM_PRINTF("%s %s\n", 		array_commands[CMD_PUSH].cmd_name, 	STACK_FRAME_REGISTER);

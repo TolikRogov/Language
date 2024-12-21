@@ -237,7 +237,6 @@ Node_t* GetCall(FrontedDescent* descent) {
 	Node_t* node2 = GetCallParameters(descent);
 	if (!node2)
 		LANGUAGE_SYNTAX_ERROR(descent);
-	node2 = _PARAMETERS(node2, NULL);
 
 	TERMINALS_CHECKER(CLOSE_ROUND);
 

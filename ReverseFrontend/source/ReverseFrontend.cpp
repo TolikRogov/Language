@@ -256,7 +256,7 @@ BinaryTreeStatusCode PullCallParameters(Node_t* node, ReverseFrontend* revfront)
 #define PROG_PRINTF(...) fprintf(revfront->prog_file, __VA_ARGS__);
 
 	PROG_PRINTF("%ls ", KeyWordsGetString(OPEN_ROUND));
-		WriteProgram(node->left, revfront);
+		WriteProgram(node, revfront);
 	PROG_PRINTF("%ls ", KeyWordsGetString(CLOSE_ROUND));
 
 #undef PROG_PRINTF
@@ -359,13 +359,51 @@ BinaryTreeStatusCode PullWhile(Node_t* node, ReverseFrontend* revfront) {
 	return TREE_NO_ERROR;
 }
 
+int NeedBrackets(Node_t* node_parent, Node_t* node_child) {
+
+	if (!node_parent || !node_child)
+		return 0;
+
+	if (node_parent->type != KEYWORD || node_child->type != KEYWORD)
+		return 0;
+
+	switch (node_parent->data.val_key_word) {
+		case DIV:
+		case MUL: {
+			switch (node_child->data.val_key_word) {
+				case MUL:
+				case DIV:
+				case ADD:
+				case SUB: 	return 1;
+				default: 	return 0;
+			}
+		}
+		default: return 0;
+	}
+
+}
+
 BinaryTreeStatusCode PullMathFunctions(Node_t* node, ReverseFrontend* revfront) {
 
 #define TABS { for (size_t i = 0; i < revfront->tabs; i++) {fprintf(revfront->prog_file, "\t");} }
 
+	int need_brackets = NeedBrackets(node, node->left);
+
+	if (need_brackets)
+		fprintf(revfront->prog_file, "%ls ", KeyWordsGetString(OPEN_ROUND));
 	WriteProgram(node->left, revfront);
+	if (need_brackets)
+		fprintf(revfront->prog_file, "%ls ", KeyWordsGetString(CLOSE_ROUND));
+
 	fprintf(revfront->prog_file, "%ls ", KeyWordsGetString(node->data.val_key_word));
+
+	need_brackets = NeedBrackets(node, node->right);
+
+	if (need_brackets)
+		fprintf(revfront->prog_file, "%ls ", KeyWordsGetString(OPEN_ROUND));
 	WriteProgram(node->right, revfront);
+	if (need_brackets)
+		fprintf(revfront->prog_file, "%ls ", KeyWordsGetString(CLOSE_ROUND));
 
 #undef TABS
 

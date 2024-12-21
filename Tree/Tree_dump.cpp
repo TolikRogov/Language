@@ -423,35 +423,35 @@ BinaryTreeStatusCode NodeGraphDump(Node_t* cur_root, FILE* dot_file, DumpLogInfo
 		default: return TREE_INVALID_TYPE;
 	}
 
-#define SPECIFIER_LABEL_PRINT(node)											 	 			 				 						 	 \
-	do {																																\
-		if (!(node)) { DOT_PRINTF("%s\\n%p ", "NONE", node); continue; } 																\
-		switch (node->type) {																											\
-			case UNW: 					{ DOT_PRINTF("%s\\n%p ", "UNKNOWN WHAT", node); break; } 										\
-			case NUMBER: 				{ DOT_PRINTF("%lg\\n%p ", node->data.val_num, node); break; }									\
-			case IDENTIFIER: { 																											\
-				PrintNString(dot_file, id_name_table->data[node->data.val_id].string, 													 \
-							id_name_table->data[node->data.val_id].length); 															\
-				DOT_PRINTF("\\n%p ", node); 																							\
-				break;																													\
-			}																															\
-			case KEYWORD: 				{ DOT_PRINTF("%ls\\n%p ", KeyWordsGetString(node->data.val_key_word), node); break; }			\
-			case FUNCTION_DEFINITION: { 																								\
-				PrintNString(dot_file, id_name_table->data[node->data.val_func_def].string, 											 \
-							id_name_table->data[node->data.val_func_def].length); 														\
-				DOT_PRINTF("\\n%p ", node); 																							\
-				break;																													\
-			}																															\
-			case PARAMETERS: 			{ DOT_PRINTF("%s\\n%p ", "PARAMETERS", node); break; }											\
-			case VAR_DECLARATION: { 																									\
-				PrintNString(dot_file, id_name_table->data[node->data.val_decl_var].string, 											 \
-							id_name_table->data[node->data.val_decl_var].length); 														\
-				DOT_PRINTF("\\n%p ", node); 																							\
-				break;																													\
-			}																															\
-			case CALL: 					{ DOT_PRINTF("%s\\n%p ", "CALL", node); break; }												\
-			default: return TREE_INVALID_TYPE;																							\
-		}																																\
+#define SPECIFIER_LABEL_PRINT(node)											 	 			 				 						 						 \
+	do {																																					\
+		if (!(node)) { DOT_PRINTF("%s\\n%p ", "NONE", node); continue; } 																					\
+		switch (node->type) {																																\
+			case UNW: 					{ DOT_PRINTF("%s\\n%p ", "UNKNOWN WHAT", node); break; } 															\
+			case NUMBER: 				{ DOT_PRINTF("%lg\\n%p ", node->data.val_num, node); break; }														\
+			case IDENTIFIER: { 																																\
+				PrintNString(dot_file, id_name_table->data[node->data.val_id].string, 																		 \
+							id_name_table->data[node->data.val_id].length); 																				\
+				DOT_PRINTF("\\n%p ", node); 																												\
+				break;																																		\
+			}																																				\
+			case KEYWORD: 				{ DOT_PRINTF("%ls (%d)\\n%p ", KeyWordsGetString(node->data.val_key_word), node->data.val_key_word, node); break; }	\
+			case FUNCTION_DEFINITION: { 																													\
+				PrintNString(dot_file, id_name_table->data[node->data.val_func_def].string, 																 \
+							id_name_table->data[node->data.val_func_def].length); 																			\
+				DOT_PRINTF("\\n%p ", node); 																												\
+				break;																																		\
+			}																																				\
+			case PARAMETERS: 			{ DOT_PRINTF("%s\\n%p ", "PARAMETERS", node); break; }																\
+			case VAR_DECLARATION: { 																														\
+				PrintNString(dot_file, id_name_table->data[node->data.val_decl_var].string, 																 \
+							id_name_table->data[node->data.val_decl_var].length); 																			\
+				DOT_PRINTF("\\n%p ", node); 																												\
+				break;																																		\
+			}																																				\
+			case CALL: 					{ DOT_PRINTF("%s\\n%p ", "CALL", node); break; }																	\
+			default: return TREE_INVALID_TYPE;																												\
+		}																																					\
 	} while(0)
 
 	SPECIFIER_LABEL_PRINT(cur_root);
