@@ -5,6 +5,8 @@
 #define TOC '#'
 
 enum KeyWordNum {
+	LEX_END				= 0,
+
 	STD_CLOSE_ROUND		= -4,
 	STD_OPEN_ROUND		= -3,
 	INVALID_KEY_WORD 	= -1,

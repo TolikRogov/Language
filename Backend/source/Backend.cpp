@@ -1,28 +1,27 @@
 #include "Backend.hpp"
 
-#define MAIN 					L"Путник"
 #define STACK_FRAME_REGISTER 	"BX"
 #define RETURN_VALUE_REGISTER 	"AX"
 
-static BinaryTreeStatusCode PullComparisons(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullIf(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullWhile(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullDefinitionParameters(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullFunctionDefinition(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullMathFunctions(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullAloneFunctions(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullReturn(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullParameters(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullCommaOp(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullCallParameters(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullCall(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullIdentifier(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullNumber(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullSequentialOp(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullAssignment(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullInput(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullPrintf(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode PullAbort(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitComparisons(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitIf(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitWhile(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitDefinitionParameters(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitFunctionDefinition(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitMathFunctions(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitAloneFunctions(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitReturn(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitParameters(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitCommaOp(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitCallParameters(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitCall(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitIdentifier(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitNumber(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitSequentialOp(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitAssignment(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitInput(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitPrintf(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitAbort(Node_t* node, Backend* backend);
 
 BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table) {
 
@@ -32,7 +31,10 @@ BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table) {
 	if (!asm_file)
 		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
 
-	Backend backend = { .asm_file = asm_file, .cnt_if = 0, .cnt_while = 0, .id_name_table = id_name_table, .tabs = 0, .cur_scope = -1 };
+	Backend backend = { .asm_file = asm_file, .cnt_if = 0,
+						.cnt_while = 0,
+						.id_name_table = id_name_table,
+						.tabs = 0, .cur_scope = -1 };
 
 	tree_status = WriteAssembleCode(tree->root, &backend);
 	TREE_ERROR_CHECK(tree_status);
@@ -80,31 +82,34 @@ Commands GetCmdByKeyWordType(KeyWordNum key_word_num) {
 	}
 }
 
-BinaryTreeStatusCode PullComparisons(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitComparisons(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
+
+	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
 
 	WriteAssembleCode(node->left, backend);
 	WriteAssembleCode(node->right, backend);
-	TABS fprintf(backend->asm_file, "%s ", array_commands[GetCmdByKeyWordType(node->data.val_key_word)].cmd_name);
+	TABS fprintf(backend->asm_file, "%s ", array_commands[cur_cmd].cmd_name);
 
 #undef TABS
 
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullAbort(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitAbort(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
-	TABS fprintf(backend->asm_file, "%s\n", array_commands[GetCmdByKeyWordType(node->data.val_key_word)].cmd_name);
+	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
+	TABS fprintf(backend->asm_file, "%s\n", array_commands[cur_cmd].cmd_name);
 
 #undef TABS
 
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullIf(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitIf(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -131,7 +136,7 @@ BinaryTreeStatusCode PullIf(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullWhile(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitWhile(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -158,7 +163,7 @@ BinaryTreeStatusCode PullWhile(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullDefinitionParameters(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitDefinitionParameters(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -180,7 +185,7 @@ BinaryTreeStatusCode PullDefinitionParameters(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullFunctionDefinition(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitFunctionDefinition(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 #define ASM_PRINTF(...) fprintf(backend->asm_file, __VA_ARGS__);
@@ -220,36 +225,42 @@ BinaryTreeStatusCode PullFunctionDefinition(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullMathFunctions(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitMathFunctions(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
+
+	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
 
 	TABS fprintf(backend->asm_file, "#%s\n", GetCommentByKeyWordType(node->data.val_key_word));
 		WriteAssembleCode(node->left, backend);
 		WriteAssembleCode(node->right, backend);
-	TABS fprintf(backend->asm_file, "%s\n", array_commands[GetCmdByKeyWordType(node->data.val_key_word)].cmd_name);
+	TABS fprintf(backend->asm_file, "%s\n", array_commands[cur_cmd].cmd_name);
 
 #undef TABS
 
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullAloneFunctions(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitAloneFunctions(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
+
+	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
 
 	TABS fprintf(backend->asm_file, "#%s\n", GetCommentByKeyWordType(node->data.val_key_word));
 		WriteAssembleCode(node->right, backend);
-	TABS fprintf(backend->asm_file, "%s\n", array_commands[GetCmdByKeyWordType(node->data.val_key_word)].cmd_name);
+	TABS fprintf(backend->asm_file, "%s\n", array_commands[cur_cmd].cmd_name);
 
 #undef TABS
 
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullReturn(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitReturn(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
+
+	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
 
 	TABS fprintf(backend->asm_file, "#%s\n", GetCommentByKeyWordType(node->data.val_key_word));
 		WriteAssembleCode(node->right, backend);
@@ -257,18 +268,18 @@ BinaryTreeStatusCode PullReturn(Node_t* node, Backend* backend) {
 	TABS fprintf(backend->asm_file, "\n#write return value to register\n");
 	TABS fprintf(backend->asm_file, "%s %s\n\n", array_commands[CMD_POP].cmd_name, RETURN_VALUE_REGISTER);
 
-	TABS fprintf(backend->asm_file, "%s\n", array_commands[GetCmdByKeyWordType(node->data.val_key_word)].cmd_name);
+	TABS fprintf(backend->asm_file, "%s\n", array_commands[cur_cmd].cmd_name);
 
 #undef TABS
 
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullParameters(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitParameters(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
-	PullDefinitionParameters(node, backend);
+	EmitDefinitionParameters(node, backend);
 	WriteAssembleCode(node->right, backend);
 
 #undef TABS
@@ -276,11 +287,11 @@ BinaryTreeStatusCode PullParameters(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullCommaOp(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitCommaOp(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
-	if (node->left) PullCommaOp(node->left, backend);
+	if (node->left) EmitCommaOp(node->left, backend);
 	WriteAssembleCode(node->right, backend);
 
 #undef TABS
@@ -288,7 +299,7 @@ BinaryTreeStatusCode PullCommaOp(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullCallParameters(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitCallParameters(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 #define ASM_PRINTF(...) fprintf(backend->asm_file, __VA_ARGS__);
@@ -298,7 +309,7 @@ BinaryTreeStatusCode PullCallParameters(Node_t* node, Backend* backend) {
 	TABS ASM_PRINTF("#push previous value of stack frame register before new call\n");
 		TABS ASM_PRINTF("%s %s\n\n", array_commands[CMD_PUSH].cmd_name, STACK_FRAME_REGISTER);
 
-	PullCommaOp(node->left, backend);
+	EmitCommaOp(node->left, backend);
 
 	TABS ASM_PRINTF("#stack frame register change value\n");
 		TABS ASM_PRINTF("%s %s\n", 		array_commands[CMD_PUSH].cmd_name, 	STACK_FRAME_REGISTER);
@@ -312,21 +323,21 @@ BinaryTreeStatusCode PullCallParameters(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullCall(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitCall(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 #define ASM_PRINTF(...) fprintf(backend->asm_file, __VA_ARGS__);
 
 	Identifier* cur_id = &backend->id_name_table->data[node->right->data.val_id];
 
-	PullCallParameters(node, backend);
+	EmitCallParameters(node, backend);
 
 	TABS ASM_PRINTF("#call function\n");
 		TABS ASM_PRINTF("%s ", array_commands[CMD_CALL].cmd_name);
 		PrintNString(backend->asm_file, cur_id->string, cur_id->length);
 		fprintf(backend->asm_file, ":\n");
 
-	TABS ASM_PRINTF("#Pull back stack frame register value as before calling function\n");
+	TABS ASM_PRINTF("#Emit back stack frame register value as before calling function\n");
 		TABS ASM_PRINTF("%s %s\n\n", array_commands[CMD_POP].cmd_name, STACK_FRAME_REGISTER);
 
 	TABS ASM_PRINTF("#push return value of function\n");
@@ -338,7 +349,7 @@ BinaryTreeStatusCode PullCall(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullIdentifier(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitIdentifier(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -360,7 +371,7 @@ BinaryTreeStatusCode PullIdentifier(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullNumber(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitNumber(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -371,7 +382,7 @@ BinaryTreeStatusCode PullNumber(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullSequentialOp(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitSequentialOp(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -384,7 +395,7 @@ BinaryTreeStatusCode PullSequentialOp(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullAssignment(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitAssignment(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -409,7 +420,7 @@ BinaryTreeStatusCode PullAssignment(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullInput(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitInput(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -421,7 +432,7 @@ BinaryTreeStatusCode PullInput(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode PullPrintf(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitPrintf(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -449,32 +460,32 @@ BinaryTreeStatusCode WriteAssembleCode(Node_t* node, Backend* backend) {
 				case NOT_EQUAL:
 				case BELOW_EQUAL:
 				case ABOVE_EQUAL:
-				case ABOVE: 		{ PullComparisons(node, backend); 			break; }
-				case SEQUENTIAL_OP: { PullSequentialOp(node, backend); 			break; }
-				case IF: 			{ PullIf(node, backend); 					break; }
-				case WHILE:			{ PullWhile(node, backend); 				break; }
-				case ASSIGNMENT: 	{ PullAssignment(node, backend); 			break; }
-				case INPUT: 		{ PullInput(node, backend); 				break; }
-				case PRINTF: 		{ PullPrintf(node, backend); 				break; }
+				case ABOVE: 		{ EmitComparisons(node, backend); 			break; }
+				case SEQUENTIAL_OP: { EmitSequentialOp(node, backend); 			break; }
+				case IF: 			{ EmitIf(node, backend); 					break; }
+				case WHILE:			{ EmitWhile(node, backend); 				break; }
+				case ASSIGNMENT: 	{ EmitAssignment(node, backend); 			break; }
+				case INPUT: 		{ EmitInput(node, backend); 				break; }
+				case PRINTF: 		{ EmitPrintf(node, backend); 				break; }
 				case SUB:
 				case MUL:
 				case SQRT:
 				case DIV:
-				case ADD: 			{ PullMathFunctions(node, backend); 		break; }
-				case RETURN:		{ PullReturn(node, backend); 				break; }
+				case ADD: 			{ EmitMathFunctions(node, backend); 		break; }
+				case RETURN:		{ EmitReturn(node, backend); 				break; }
 				case COS:
-				case SIN: 			{ PullAloneFunctions(node, backend); 		break; }
-				case ABORT:			{ PullAbort(node, backend);					break; }
+				case SIN: 			{ EmitAloneFunctions(node, backend); 		break; }
+				case ABORT:			{ EmitAbort(node, backend);					break; }
 				default: return TREE_NO_ERROR;
 			}
 			break;
 		}
-		case FUNCTION_DEFINITION: 	{ PullFunctionDefinition(node, backend);	 break; }
+		case FUNCTION_DEFINITION: 	{ EmitFunctionDefinition(node, backend);	 break; }
 		case VAR_DECLARATION: 		{ WriteAssembleCode(node->right, backend); 	break; }
-		case NUMBER: 		 		{ PullNumber(node, backend); 				break; }
-		case IDENTIFIER: 			{ PullIdentifier(node, backend); 			 break; }
-		case CALL: 					{ PullCall(node, backend); 					break; }
-		case PARAMETERS:			{ PullParameters(node, backend);			break; }
+		case NUMBER: 		 		{ EmitNumber(node, backend); 				break; }
+		case IDENTIFIER: 			{ EmitIdentifier(node, backend); 			 break; }
+		case CALL: 					{ EmitCall(node, backend); 					break; }
+		case PARAMETERS:			{ EmitParameters(node, backend);			break; }
 		default: return TREE_NO_ERROR;
 	}
 

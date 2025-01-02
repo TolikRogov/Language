@@ -104,6 +104,144 @@ Node_t* GetRoot(Lexer* lexer, size_t* pc, IdNameTable* id_name_table) {
 	return node;
 }
 
+static BinaryTreeStatusCode ReadNameTableNames(IdNameTable* id_name_table, size_t* pc) {
+
+	for (size_t i = 0; i < id_name_table->capacity; i++) {
+		id_name_table->data[i].define_status = 0;
+		id_name_table->data[i].global = 0;
+		id_name_table->data[i].length = 0;
+		id_name_table->data[i].num = 0;
+		id_name_table->data[i].scope_variables = {};
+		id_name_table->data[i].string = NULL;
+		id_name_table->data[i].type = ID_VAR;
+
+		id_name_table->data[i].string = id_name_table->buffer + *pc;
+
+		size_t length = *pc;
+		while (id_name_table->buffer[*pc] != '\n') (*pc)++;
+		length = (*pc)++ - length;
+
+		id_name_table->data[i].length = length;
+		id_name_table->data[i].num = (int)i;
+	}
+
+	return TREE_NO_ERROR;
+}
+
+static BinaryTreeStatusCode ReadNameTableGlobalScope(IdNameTable* id_name_table, size_t* pc) {
+
+	wchar_t* count_end = NULL;
+
+	int global_scope_size = (int)wcstol(id_name_table->buffer + *pc, &count_end, 10);
+	if (count_end == id_name_table->buffer + *pc)
+		TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+	if (global_scope_size < 0)
+		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+	*pc = (size_t)(count_end - id_name_table->buffer);
+	(*pc)++;
+
+	int global_scope = (int)wcstol(id_name_table->buffer + *pc, &count_end, 10);
+	if (count_end == id_name_table->buffer + *pc)
+		TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+	if (global_scope != -1)
+		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+	*pc = (size_t)(count_end - id_name_table->buffer);
+	(*pc)++;
+
+	for (size_t i = 0; i < (size_t)global_scope_size; i++) {
+		int id_num = (int)wcstol(id_name_table->buffer + *pc, &count_end, 10);
+		if (count_end == id_name_table->buffer + *pc)
+			TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+		if (id_num < 0)
+			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+		*pc = (size_t)(count_end - id_name_table->buffer);
+		(*pc)++;
+
+		int id_type = (int)wcstol(id_name_table->buffer + *pc, &count_end, 10);
+		if (count_end == id_name_table->buffer + *pc)
+			TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+		if (id_type < 1)
+			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+		*pc = (size_t)(count_end - id_name_table->buffer);
+		(*pc)++;
+
+		id_name_table->data[id_num].type = (IdType)id_type;
+		id_name_table->data[id_num].global = 1;
+		id_name_table->data[id_num].define_status = 1;
+	}
+
+	return TREE_NO_ERROR;
+}
+
+static BinaryTreeStatusCode ReadNameTableScopes(IdNameTable* id_name_table, size_t* pc, int* scopes_count) {
+
+	wchar_t* count_end = NULL;
+
+	(*pc)++;
+	for (size_t i = 0; i < (size_t)(*scopes_count - 1); i++) {
+		int cur_scope_size = (int)wcstol(id_name_table->buffer + *pc, &count_end, 10);
+		if (count_end == id_name_table->buffer + *pc)
+			TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+		if (cur_scope_size < 0)
+			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+		*pc = (size_t)(count_end - id_name_table->buffer);
+		(*pc)++;
+
+		int id_num = (int)wcstol(id_name_table->buffer + *pc, &count_end, 10);
+		if (count_end == id_name_table->buffer + *pc)
+			TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+		if (id_num < 0)
+			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+		*pc = (size_t)(count_end - id_name_table->buffer);
+		(*pc)++;
+
+		id_name_table->data[id_num].scope_variables.capacity = id_name_table->data[id_num].scope_variables.size = (size_t)cur_scope_size;
+		id_name_table->data[id_num].scope_variables.data = (int*)calloc((size_t)cur_scope_size, sizeof(int));
+		if (!id_name_table->data[id_num].scope_variables.data)
+			TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
+
+		for (size_t j = 0; j < (size_t)cur_scope_size; j++) {
+			int local_id_num = (int)wcstol(id_name_table->buffer + *pc, &count_end, 10);
+			if (count_end == id_name_table->buffer + *pc)
+				TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+			if (local_id_num < 0)
+				TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+			*pc = (size_t)(count_end - id_name_table->buffer);
+			(*pc)++;
+
+			int local_id_type = (int)wcstol(id_name_table->buffer + *pc, &count_end, 10);
+			if (count_end == id_name_table->buffer + *pc)
+				TREE_ERROR_CHECK(TREE_READ_ERROR);
+
+			if (local_id_type < 1)
+				TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
+
+			*pc = (size_t)(count_end - id_name_table->buffer);
+			(*pc)++;
+
+			id_name_table->data[id_num].scope_variables.data[j] = local_id_num;
+			id_name_table->data[local_id_num].define_status = 1;
+			id_name_table->data[local_id_num].type = (IdType)local_id_type;
+		}
+	}
+
+	return TREE_NO_ERROR;
+}
+
 static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 
 	wchar_t* count_end = NULL;
@@ -118,27 +256,8 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 	if (!id_name_table->data)
 		TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
 
-	//General Name Table read
-	for (size_t i = 0; i < id_name_table->capacity; i++) {
-		id_name_table->data[i].define_status = 0;
-		id_name_table->data[i].global = 0;
-		id_name_table->data[i].length = 0;
-		id_name_table->data[i].num = 0;
-		id_name_table->data[i].scope_variables = {};
-		id_name_table->data[i].string = NULL;
-		id_name_table->data[i].type = ID_VAR;
+	ReadNameTableNames(id_name_table, &pc);
 
-		id_name_table->data[i].string = id_name_table->buffer + pc;
-
-		size_t length = pc;
-		while (id_name_table->buffer[pc] != '\n') pc++;
-		length = pc++ - length;
-
-		id_name_table->data[i].length = length;
-		id_name_table->data[i].num = (int)i;
-	}
-
-	//Scopes count
 	pc++;
 	int scopes_count = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
 	if (count_end == id_name_table->buffer + pc)
@@ -150,108 +269,8 @@ static BinaryTreeStatusCode NameTableReader(IdNameTable* id_name_table) {
 	pc = (size_t)(count_end - id_name_table->buffer);
 	pc += 2;
 
-	//Global scope
-	int global_scope_size = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
-	if (count_end == id_name_table->buffer + pc)
-		TREE_ERROR_CHECK(TREE_READ_ERROR);
-
-	if (global_scope_size < 0)
-		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
-
-	pc = (size_t)(count_end - id_name_table->buffer);
-	pc++;
-
-	int global_scope = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
-	if (count_end == id_name_table->buffer + pc)
-		TREE_ERROR_CHECK(TREE_READ_ERROR);
-
-	if (global_scope != -1)
-		TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
-
-	pc = (size_t)(count_end - id_name_table->buffer);
-	pc++;
-
-	//Global scope
-	for (size_t i = 0; i < (size_t)global_scope_size; i++) {
-		int id_num = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
-		if (count_end == id_name_table->buffer + pc)
-			TREE_ERROR_CHECK(TREE_READ_ERROR);
-
-		if (id_num < 0)
-			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
-
-		pc = (size_t)(count_end - id_name_table->buffer);
-		pc++;
-
-		int id_type = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
-		if (count_end == id_name_table->buffer + pc)
-			TREE_ERROR_CHECK(TREE_READ_ERROR);
-
-		if (id_type < 1)
-			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
-
-		pc = (size_t)(count_end - id_name_table->buffer);
-		pc++;
-
-		id_name_table->data[id_num].type = (IdType)id_type;
-		id_name_table->data[id_num].global = 1;
-		id_name_table->data[id_num].define_status = 1;
-	}
-
-	//Other scopes
-	pc++;
-	for (size_t i = 0; i < (size_t)(scopes_count - 1); i++) {
-		int cur_scope_size = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
-		if (count_end == id_name_table->buffer + pc)
-			TREE_ERROR_CHECK(TREE_READ_ERROR);
-
-		if (cur_scope_size < 0)
-			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
-
-		pc = (size_t)(count_end - id_name_table->buffer);
-		pc++;
-
-		int id_num = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
-		if (count_end == id_name_table->buffer + pc)
-			TREE_ERROR_CHECK(TREE_READ_ERROR);
-
-		if (id_num < 0)
-			TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
-
-		pc = (size_t)(count_end - id_name_table->buffer);
-		pc++;
-
-		id_name_table->data[id_num].scope_variables.capacity = id_name_table->data[id_num].scope_variables.size = (size_t)cur_scope_size;
-		id_name_table->data[id_num].scope_variables.data = (int*)calloc((size_t)cur_scope_size, sizeof(int));
-		if (!id_name_table->data[id_num].scope_variables.data)
-			TREE_ERROR_CHECK(TREE_ALLOC_ERROR);
-
-		for (size_t j = 0; j < (size_t)cur_scope_size; j++) {
-			int local_id_num = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
-			if (count_end == id_name_table->buffer + pc)
-				TREE_ERROR_CHECK(TREE_READ_ERROR);
-
-			if (local_id_num < 0)
-				TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
-
-			pc = (size_t)(count_end - id_name_table->buffer);
-			pc++;
-
-			int local_id_type = (int)wcstol(id_name_table->buffer + pc, &count_end, 10);
-			if (count_end == id_name_table->buffer + pc)
-				TREE_ERROR_CHECK(TREE_READ_ERROR);
-
-			if (local_id_type < 1)
-				TREE_ERROR_CHECK(TREE_LANGUAGE_SYNTAX_ERROR);
-
-			pc = (size_t)(count_end - id_name_table->buffer);
-			pc++;
-
-			id_name_table->data[id_num].scope_variables.data[j] = local_id_num;
-			id_name_table->data[local_id_num].define_status = 1;
-			id_name_table->data[local_id_num].type = (IdType)local_id_type;
-		}
-	}
+	ReadNameTableGlobalScope(id_name_table, &pc);
+	ReadNameTableScopes(id_name_table, &pc, &scopes_count);
 
 #ifdef PRINT_DEBUG
 	PrintIdNameTable(id_name_table);

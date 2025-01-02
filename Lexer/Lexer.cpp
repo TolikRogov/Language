@@ -122,22 +122,6 @@ BinaryTreeStatusCode PrintTokenValue(Token* token, IdNameTable* id_name_table) {
 	return TREE_NO_ERROR;
 }
 
-//FIXME
-BinaryTreeStatusCode PrintTokenValueGrammar(Token* token) {
-	switch (token->type) {
-		case NUMBER: 				{ printf(GREEN("%lg"), token->data.val_num); break; }
-		case IDENTIFIER: 			{ printf(GREEN("%zu"), token->data.val_id); break; }
-		case KEYWORD:  				{ printf(GREEN("%ls"), KeyWordsGetString(token->data.val_key_word)); break; }
-		case FUNCTION_DEFINITION: 	{ printf(GREEN("%zu"), token->data.val_func_def); break; }
-		case VAR_DECLARATION: 		{ printf(GREEN("%zu"), token->data.val_decl_var); break; }
-		case PARAMETERS: 			{ printf(GREEN("%ls"),  L"PARAMETERS"); break; }
-		case UNW:
-		default:  { printf(GREEN("%ls"), L"UNW"); break; }
-	}
-	printf("\n");
-	return TREE_NO_ERROR;
-}
-
 BinaryTreeStatusCode PrintLexer(Lexer* lexer, IdNameTable* id_name_table) {
 
 	if (!lexer)
@@ -149,7 +133,11 @@ BinaryTreeStatusCode PrintLexer(Lexer* lexer, IdNameTable* id_name_table) {
 	printf(BLUE("Lexer size:") " " GREEN("%zu") "\n", lexer->size);
 
 	for (size_t i = 0; i < lexer->capacity; i++) {
-		printf(BLUE("Lexer token[%.2zu]:") " type - " GREEN("%10ls") " index - " GREEN("%5zu"), i, GetTokenStringType(lexer->tokens[i].type), lexer->tokens[i].index);
+		printf(BLUE("Lexer token[%.2zu]:")
+					" type - " GREEN("%10ls")
+					" index - " GREEN("%5zu"),
+					i,
+					GetTokenStringType(lexer->tokens[i].type), lexer->tokens[i].index);
 		printf(" value - ");
 		PrintTokenValue(&lexer->tokens[i], id_name_table);
 	}
@@ -293,194 +281,35 @@ BinaryTreeStatusCode SecondRun(Lexer* lexer) {
 
 #define TOKEN_VAL(num) lexer->tokens[(num)].data.val_key_word
 #define TOKEN(num) &lexer->tokens[(num)]
-#define ODDS fabs(lexer->capacity - i)
 
-	for (size_t i = 0; i < lexer->capacity; i++) {
+	#include "ReplaceTable.hpp"
 
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_ALL && TOKEN_VAL(i + 1) == LEX_FORGET) {
-			ReplaceToken(TOKEN(i), {.val_key_word = CLOSE_ROUND});
-			ReplacingShift(lexer, i, 2);
-			continue;
+	size_t replace_table_size = sizeof(ReplaceTable) / sizeof(ReplaceTable[0]);
+
+	for (int i = 0; i < (int)lexer->capacity; i++) {
+
+		for (int rule = 0; rule < (int)replace_table_size; rule++) {
+
+			int replace_status = 1;
+			int tkn = 0;
+
+			for (; ReplaceTable[rule].array[tkn] != LEX_END; tkn++) {
+				if (ReplaceTable[rule].array[tkn] != TOKEN_VAL(i + tkn)) {
+					replace_status = 0;
+					break;
+				}
+			}
+
+			if (replace_status) {
+				ReplaceToken(TOKEN(i), {.val_key_word = ReplaceTable[rule].changed});
+				ReplacingShift(lexer, (size_t)i, (size_t)(tkn));
+				break;
+			}
 		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_JUMPED && TOKEN_VAL(i + 1) == LEX_CO && TOKEN_VAL(i + 2) == LEX_MOUNTAIN) {
-			ReplaceToken(TOKEN(i), {.val_key_word = OPEN_FIGURE});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_WILD && TOKEN_VAL(i + 1) == LEX_SCREAM && TOKEN_VAL(i + 2) == LEX_EMIT) {
-			ReplaceToken(TOKEN(i), {.val_key_word = CLOSE_FIGURE});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 5 && TOKEN_VAL(i) == LEX_BUT && TOKEN_VAL(i + 1) == LEX_HAPPENED &&
-			TOKEN_VAL(i + 2) == LEX_ALL && TOKEN_VAL(i + 3) == LEX_NO && TOKEN_VAL(i + 4) == LEX_SO) {
-			ReplaceToken(TOKEN(i), {.val_key_word = ELSE});
-			ReplacingShift(lexer, i, 5);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_ON && TOKEN_VAL(i + 1) == LEX_DINNER &&
-			TOKEN_VAL(i + 2) == LEX_INVITED) {
-			ReplaceToken(TOKEN(i), {.val_key_word = POW});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_CAME_IN && TOKEN_VAL(i + 1) == LEX_IN &&
-			TOKEN_VAL(i + 2) == LEX_DEADLOCK) {
-			ReplaceToken(TOKEN(i), {.val_key_word = OPEN_ROUND});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 4 && TOKEN_VAL(i) == LEX_ONE && TOKEN_VAL(i + 1) == LEX_LEAST &&
-			TOKEN_VAL(i + 2) == LEX_ONLY && TOKEN_VAL(i + 3) == LEX_PATH) {
-			ReplaceToken(TOKEN(i), {.val_key_word = IF});
-			ReplacingShift(lexer, i, 4);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_WENT && TOKEN_VAL(i + 1) == LEX_TO_HOME) {
-			ReplaceToken(TOKEN(i), {.val_key_word = WHILE});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_RUMBLES && TOKEN_VAL(i + 1) == LEX_THUNDER) {
-			ReplaceToken(TOKEN(i), {.val_key_word = SIN});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_SPARKLES && TOKEN_VAL(i + 1) == LEX_LIGHTNING) {
-			ReplaceToken(TOKEN(i), {.val_key_word = COS});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_ON && TOKEN_VAL(i + 1) == LEX_EDGE) {
-			ReplaceToken(TOKEN(i), {.val_key_word = FLOOR});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_ON && TOKEN_VAL(i + 1) == LEX_HILL) {
-			ReplaceToken(TOKEN(i), {.val_key_word = DIFF});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_WAS_FALLING && TOKEN_VAL(i + 1) == LEX_NIGHT) {
-			ReplaceToken(TOKEN(i), {.val_key_word = SQRT});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_HAPPINESS && TOKEN_VAL(i + 1) == LEX_GAIN) {
-			ReplaceToken(TOKEN(i), {.val_key_word = EQUAL});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 4 && TOKEN_VAL(i) == LEX_TIME && TOKEN_VAL(i + 1) == LEX_ALL &&
-			TOKEN_VAL(i + 2) == LEX_LESS && TOKEN_VAL(i + 3) == LEX_DEVOTES) {
-			ReplaceToken(TOKEN(i), {.val_key_word = BELOW});
-			ReplacingShift(lexer, i, 4);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_INTERESTING && TOKEN_VAL(i + 1) == LEX_HUGE &&
-			TOKEN_VAL(i + 2) == LEX_FOUND) {
-			ReplaceToken(TOKEN(i), {.val_key_word = ABOVE});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_NO && TOKEN_VAL(i + 1) == LEX_DONT_ENOUGH &&
-			TOKEN_VAL(i + 2) == LEX_POWER) {
-			ReplaceToken(TOKEN(i), {.val_key_word = BELOW_EQUAL});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_VERY && TOKEN_VAL(i + 1) == LEX_STUBBORN) {
-			ReplaceToken(TOKEN(i), {.val_key_word = ABOVE_EQUAL});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_DIFFERENCE && TOKEN_VAL(i + 1) == LEX_FOUND) {
-			ReplaceToken(TOKEN(i), {.val_key_word = NOT_EQUAL});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_FUNNY && TOKEN_VAL(i + 1) == LEX_ADVICE) {
-			ReplaceToken(TOKEN(i), {.val_key_word = OR});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_HE && TOKEN_VAL(i + 1) == LEX_NO &&
-			TOKEN_VAL(i + 2) == LEX_KNOW) {
-			ReplaceToken(TOKEN(i), {.val_key_word = NOT});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_VO && TOKEN_VAL(i + 1) == LEX_DARKNESS &&
-			TOKEN_VAL(i + 2) == LEX_TO_NIGHT) {
-			ReplaceToken(TOKEN(i), {.val_key_word = COMMA_OP});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_THROUGH && TOKEN_VAL(i + 1) == LEX_FOREST &&
-			TOKEN_VAL(i + 2) == LEX_WANDER) {
-			ReplaceToken(TOKEN(i), {.val_key_word = INIT_TYPE});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_KOL && TOKEN_VAL(i + 1) == LEX_WANT &&
-			TOKEN_VAL(i + 2) == LEX_WILL_TELL) {
-			ReplaceToken(TOKEN(i), {.val_key_word = PRINTF});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 5 && TOKEN_VAL(i) == LEX_NOTHING && TOKEN_VAL(i + 1) == LEX_IN &&
-			TOKEN_VAL(i + 2) == LEX_LIFE && TOKEN_VAL(i + 3) == LEX_NO && TOKEN_VAL(i + 4) == LEX_GET_BACK) {
-			ReplaceToken(TOKEN(i), {.val_key_word = RETURN});
-			ReplacingShift(lexer, i, 5);
-			continue;
-		}
-
-		if (ODDS > 3 && TOKEN_VAL(i) == LEX_ROBBERS && TOKEN_VAL(i + 1) == LEX_CAME_OUT &&
-			TOKEN_VAL(i + 2) == LEX_CROWD) {
-			ReplaceToken(TOKEN(i), {.val_key_word = BREAK});
-			ReplacingShift(lexer, i, 3);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_CLOSE && TOKEN_VAL(i + 1) == LEX_EYES) {
-			ReplaceToken(TOKEN(i), {.val_key_word = CONTINUE});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
-		if (ODDS > 2 && TOKEN_VAL(i) == LEX_FELL_DOWN && TOKEN_VAL(i + 1) == LEX_DEAD) {
-			ReplaceToken(TOKEN(i), {.val_key_word = ABORT});
-			ReplacingShift(lexer, i, 2);
-			continue;
-		}
-
 	}
 
 #undef TOKEN
+#undef TOKEN_VAL
 
 	return TREE_NO_ERROR;
 }
