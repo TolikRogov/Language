@@ -264,7 +264,7 @@ BinaryTreeStatusCode ReplacingShift(Lexer* lexer, size_t i, size_t cnt) {
 			case KEYWORD: 		{ lexer->tokens[j].data.val_key_word	= lexer->tokens[j + cnt - 1].data.val_key_word; 	break; }
 			default: 			break;
 		}
-		lexer->tokens[j].index = lexer->tokens[j + 1].index;
+		lexer->tokens[j].index = lexer->tokens[j + cnt - 1].index;
 	}
 
 	return TREE_NO_ERROR;
