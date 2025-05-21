@@ -911,7 +911,7 @@ BinaryTreeStatusCode CreateTreeFromFile(Tree* tree, IdNameTable* id_name_table, 
 
 	wchar_t c = 0;
 	size_t ip = 0;
-	while ((c = fgetwc(prog_file)) != EOF) { buffer[ip] = c; ip++; }
+	while ((c = (wchar_t)fgetwc(prog_file)) != EOF) { buffer[ip] = c; ip++; }
 
 	if (fclose(prog_file))
 		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
@@ -924,7 +924,7 @@ BinaryTreeStatusCode CreateTreeFromFile(Tree* tree, IdNameTable* id_name_table, 
 	lexer->buffer = buffer;
 	lexer->buffer_size = ip;
 	size_t pc = 0;
-	FrontedDescent descent = {.lexer = lexer, .id_name_table = id_name_table, .pc = &pc, .cur_scope = -1};
+	FrontedDescent descent = {.lexer = lexer, .pc = &pc, .id_name_table = id_name_table, .cur_scope = -1};
 	LEXICAL_ANALYSIS(buffer, lexer, id_name_table, lexer->buffer_size);
 
 	tree->root = GetGrammar(&descent);

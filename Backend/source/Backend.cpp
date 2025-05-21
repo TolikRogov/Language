@@ -31,10 +31,12 @@ BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table) {
 	if (!asm_file)
 		TREE_ERROR_CHECK(TREE_FILE_OPEN_ERROR);
 
-	Backend backend = { .asm_file = asm_file, .cnt_if = 0,
+	Backend backend = { .id_name_table = id_name_table,
+						.asm_file = asm_file,
+						.tabs = 0,
+						.cnt_if = 0,
 						.cnt_while = 0,
-						.id_name_table = id_name_table,
-						.tabs = 0, .cur_scope = -1 };
+						.cur_scope = -1 };
 
 	tree_status = WriteAssembleCode(tree->root, &backend);
 	TREE_ERROR_CHECK(tree_status);

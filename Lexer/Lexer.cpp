@@ -347,11 +347,11 @@ BinaryTreeStatusCode LexicalAnalysis(wchar_t* buffer, Lexer* lexer, IdNameTable*
 
 	LexicalAnalysis_t lxa = { 	.id_name_table = id_name_table,
 								.size = lexer->buffer_size,
-								.token_end = &token_end,
 								.token_start = &token_start,
+								.token_end = &token_end,
 								.op_find = &op_find,
-								.token_end_pointer = &token_end_pointer,
-								.var_find = &var_find };
+								.var_find = &var_find,
+								.token_end_pointer = &token_end_pointer};
 
 	while (true) {
 		LEXER_REALLOC(lexer);
@@ -363,9 +363,10 @@ BinaryTreeStatusCode LexicalAnalysis(wchar_t* buffer, Lexer* lexer, IdNameTable*
 
 		token_end = token_start + 1;
 
-		while ((isalpha(buffer[token_end]) || buffer[token_end] == '_') &&
-			  ((isalpha(buffer[token_end - 1])) || buffer[token_end - 1] == '_'))
-			{ token_end++; }
+		while ((iswalpha(buffer[token_end]) || buffer[token_end] == '_') &&
+			  ((iswalpha(buffer[token_end - 1])) || buffer[token_end - 1] == '_')) {
+			  token_end++;
+		}
 
 		op_find = 0;
 		FindOperation(buffer, lexer, &lxa);
@@ -375,8 +376,8 @@ BinaryTreeStatusCode LexicalAnalysis(wchar_t* buffer, Lexer* lexer, IdNameTable*
 		if (GetNumber(buffer, lexer, &lxa))
 			continue;
 
-		while ((isalpha(buffer[token_end]) || isdigit(buffer[token_end]) || buffer[token_end] == '_') &&
-			   (isalpha(buffer[token_end - 1]) || isdigit(buffer[token_end - 1]) || buffer[token_end - 1] == '_'))
+		while ((iswalpha(buffer[token_end]) || isdigit(buffer[token_end]) || buffer[token_end] == '_') &&
+			   (iswalpha(buffer[token_end - 1]) || isdigit(buffer[token_end - 1]) || buffer[token_end - 1] == '_'))
 			{ token_end++; }
 
 		var_find = 0;

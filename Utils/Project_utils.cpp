@@ -1,5 +1,9 @@
 #include "Project_utils.hpp"
 
+int iswalpha(wchar_t c) {
+	return ((c >= 1040 && c <= 1105) || c == 1025 || isalpha(c) ? 1 : 0);
+}
+
 BinaryTreeStatusCode PrintNString(FILE* stream, const wchar_t* string, size_t n) {
 
 	for (size_t i = 0; i < n; i++)
@@ -24,6 +28,7 @@ const wchar_t* BinaryTreeErrorsMessenger(BinaryTreeStatusCode status) {
 		case TREE_FILE_OPEN_ERROR:				return L"TREE ERROR - FILE WAS NOT OPENED";
 		case TREE_FILE_CLOSE_ERROR:				return L"TREE ERROR - FILE WAS NOT CLOSED";
 		case TREE_DIR_CLOSE_ERROR:				return L"TREE ERROR - DIRECTORY WAS NOT CLOSED";
+		case TREE_SYSTEM_ERROR:					return L"TREE ERROR - SYSTEM FAILED";
 		case TREE_UNDEFINED_ERROR:
 		default: 								return L"UNDEFINED ERROR";
 	}

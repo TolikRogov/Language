@@ -68,3 +68,14 @@ BinaryTreeStatusCode PrintLexer(Lexer* lexer, IdNameTable* id_name_table);
 BinaryTreeStatusCode SkipExtra(const wchar_t* buffer, size_t* token_start, size_t size);
 BinaryTreeStatusCode LexicalAnalysis(wchar_t* buffer, Lexer* lexer, IdNameTable* id_name_table, size_t size);
 BinaryTreeStatusCode PrintTokenValue(Token* token, IdNameTable* id_name_table);
+
+BinaryTreeStatusCode FindOperation(wchar_t* buffer, Lexer* lexer, LexicalAnalysis_t* lxa);
+BinaryTreeStatusCode UnaryMinus(Lexer* lexer);
+int GetNumber(wchar_t* buffer, Lexer* lexer, LexicalAnalysis_t* lxa);
+BinaryTreeStatusCode FindVariable(wchar_t* buffer, Lexer* lexer, LexicalAnalysis_t* lxa);
+BinaryTreeStatusCode AddNewVariable(wchar_t* buffer, Lexer* lexer, LexicalAnalysis_t* lxa);
+BinaryTreeStatusCode ReplacingShift(Lexer* lexer, size_t i, size_t cnt);
+BinaryTreeStatusCode ReplaceToken(Token* token, Data_t data);
+BinaryTreeStatusCode SecondRun(Lexer* lexer);
+BinaryTreeStatusCode LexerFillByEmpty(Lexer* lexer, size_t cnt);
+size_t LexerFindSize(Lexer* lexer);

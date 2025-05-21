@@ -297,7 +297,7 @@ BinaryTreeStatusCode ReadNameTableStandard(IdNameTable* id_name_table) {
 
 	wchar_t c = 0;
 	size_t ip = 0;
-	while ((c = fgetwc(name_table_file)) != EOF) { buffer[ip] = c; ip++; }
+	while ((c = (wchar_t)fgetwc(name_table_file)) != EOF) { buffer[ip] = c; ip++; }
 
 	if (fclose(name_table_file))
 		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
@@ -333,7 +333,7 @@ BinaryTreeStatusCode ReadTreeStandard(Tree* tree, IdNameTable* id_name_table, Le
 
 	wchar_t c = 0;
 	size_t ip = 0;
-	while ((c = fgetwc(tree_file)) != EOF) { buffer[ip] = c; ip++; }
+	while ((c = (wchar_t)fgetwc(tree_file)) != EOF) { buffer[ip] = c; ip++; }
 
 	if (fclose(tree_file))
 		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);

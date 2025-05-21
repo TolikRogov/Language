@@ -280,13 +280,17 @@ BinaryTreeStatusCode BinaryTreeCreateDumpDir() {
 	if (dump_dir) {
 		if (closedir(dump_dir))
 			TREE_ERROR_CHECK(TREE_DIR_CLOSE_ERROR);
-		system("rm -rf " DUMP_DIR_);
+		if (system("rm -rf " DUMP_DIR_) == -1)
+			TREE_ERROR_CHECK(TREE_SYSTEM_ERROR);
 	}
-	system("mkdir " DUMP_DIR_);
+	if (system("mkdir " DUMP_DIR_) == -1)
+		TREE_ERROR_CHECK(TREE_SYSTEM_ERROR);
 
 	DIR* img_dir = opendir(DUMP_DIR_ IMG_DIR_);
-	if (!img_dir)
-		system("mkdir " DUMP_DIR_ IMG_DIR_);
+	if (!img_dir) {
+		if (system("mkdir " DUMP_DIR_ IMG_DIR_) == -1)
+			TREE_ERROR_CHECK(TREE_SYSTEM_ERROR);
+	}
 	else {
 		if (closedir(img_dir))
 			TREE_ERROR_CHECK(TREE_DIR_CLOSE_ERROR);
@@ -341,7 +345,8 @@ BinaryTreeStatusCode BinaryTreeBashScript(Tree* tree, DumpLogInfo* dump_info) {
 	if (fclose(bash_script))
 		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
 
-	system("chmod +x " BASH_FILE_ "; ./" BASH_FILE_);
+	if (system("chmod +x " BASH_FILE_ "; ./" BASH_FILE_) == -1)
+		TREE_ERROR_CHECK(TREE_SYSTEM_ERROR);
 
 	FILE* html_file = fopen(HTML_FILE_, "r+");
 	if (!html_file)

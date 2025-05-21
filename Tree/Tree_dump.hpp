@@ -14,7 +14,10 @@
 #define IMG_EXTENSION 	"svg"
 
 #ifdef PRINT_DEBUG
-	#define OPEN_HTML_FILE() system(OPEN HTML_FILE_);
+	#define OPEN_HTML_FILE() {							\
+		if (system(OPEN HTML_FILE_) == -1)				\
+			TREE_ERROR_CHECK(TREE_SYSTEM_ERROR);		\
+	}
 #else
 	#define OPEN_HTML_FILE()
 #endif

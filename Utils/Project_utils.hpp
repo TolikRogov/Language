@@ -22,8 +22,10 @@
 
 #ifdef __APPLE__
 	#define OPEN	"open "
+#elif __linux__
+	#define OPEN	"google-chrome "
 #else
-	#define OPEN	"xdg-open "
+	#define OPEN 	"xdg-open "
 #endif
 
 #define TREE_ERROR_CHECK(status) {																					 \
@@ -56,6 +58,7 @@ enum BinaryTreeStatusCode {
 	TREE_FILE_OPEN_ERROR,
 	TREE_FILE_CLOSE_ERROR,
 	TREE_DIR_CLOSE_ERROR,
+	TREE_SYSTEM_ERROR,
 };
 
 const double DIFF_EPS = 1e-10;
@@ -67,3 +70,4 @@ int CharStrCmp(const char* str1, const char* str2);
 int StrLen(const wchar_t* str);
 int DiffCompareDouble(double var1, double var2);
 int StrNCmp(const wchar_t* str1, const wchar_t* str2, int n1, int n2);
+int iswalpha(wchar_t c);
