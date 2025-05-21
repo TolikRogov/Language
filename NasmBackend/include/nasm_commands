@@ -1,0 +1,29 @@
+DEF_CMD_(HLT, hlt)
+
+DEF_CMD_(PUSH, push)
+DEF_CMD_(POP, pop)
+DEF_CMD_(MOV, mov)
+
+DEF_CMD_(ADD, add)
+DEF_CMD_(SUB, sub)
+DEF_CMD_(DIV, div)
+DEF_CMD_(MUL, mul)
+DEF_CMD_(IDIV, idiv)
+
+DEF_CMD_(IN, my_scanf)
+DEF_CMD_(OUT, my_printf)
+
+DEF_CMD_(SQRT, fsqrt)
+DEF_CMD_(SIN, fsin)
+DEF_CMD_(COS, fcos)
+
+DEF_CMD_(JL, jl)
+DEF_CMD_(JG, jg)
+DEF_CMD_(JLE, jle)
+DEF_CMD_(JGE, jge)
+DEF_CMD_(JMP, jmp)
+DEF_CMD_(JE, je)
+DEF_CMD_(JNE, jne)
+
+DEF_CMD_(CALL, call)
+DEF_CMD_(RET, ret)

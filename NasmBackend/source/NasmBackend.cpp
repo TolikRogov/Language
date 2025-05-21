@@ -1,7 +1,8 @@
 #include "NasmBackend.hpp"
 
-#define STACK_FRAME_REGISTER 	"BX"
-#define RETURN_VALUE_REGISTER 	"AX"
+#define STACK_FRAME_REGISTER 	"rbx"
+#define RETURN_VALUE_REGISTER 	"rax"
+#define ASSIGNMENT_REGISTER		"r8"
 
 static BinaryTreeStatusCode EmitComparisons(Node_t* node, Backend* backend);
 static BinaryTreeStatusCode EmitIf(Node_t* node, Backend* backend);
@@ -38,11 +39,42 @@ BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table) {
 						.cnt_while = 0,
 						.cur_scope = -1 };
 
+	tree_status = SectionsDataAndText(&backend, id_name_table);
+	TREE_ERROR_CHECK(tree_status);
+
 	tree_status = WriteAssembleCode(tree->root, &backend);
 	TREE_ERROR_CHECK(tree_status);
 
 	if (fclose(asm_file))
 		TREE_ERROR_CHECK(TREE_FILE_CLOSE_ERROR);
+
+	return TREE_NO_ERROR;
+}
+
+BinaryTreeStatusCode SectionsDataAndText(Backend* backend, IdNameTable* id_name_table) {
+
+	fprintf(backend->asm_file, "section .data\n");
+
+	for (size_t i = 0; i < id_name_table->size - 1; i++) {
+		Identifier cur_id = id_name_table->data[i];
+
+		if (cur_id.type != ID_VAR || !cur_id.global)
+			continue;
+
+		fprintf(backend->asm_file, "\t_%zu dq 0 ;", i);
+		PrintNString(backend->asm_file, cur_id.string, cur_id.length);
+		fprintf(backend->asm_file, "\n");
+	}
+
+	fprintf(backend->asm_file, "\n");
+	fprintf(backend->asm_file, "section .text\n");
+	fprintf(backend->asm_file, "\tglobal main\n");
+	fprintf(backend->asm_file, "\textern %s\n", array_commands[CMD_IN].cmd_name);
+	fprintf(backend->asm_file, "\textern %s\n", array_commands[CMD_OUT].cmd_name);
+
+	fprintf(backend->asm_file, "\n");
+	fprintf(backend->asm_file, "main:\n");
+	(backend->tabs)++;
 
 	return TREE_NO_ERROR;
 }
@@ -64,12 +96,12 @@ const char* GetCommentByKeyWordType(KeyWordNum key_word_num) {
 
 Commands GetCmdByKeyWordType(KeyWordNum key_word_num) {
 	switch (key_word_num) {
-		case ABOVE: 		return CMD_JBE;
+		case ABOVE: 		return CMD_JLE;
 		case EQUAL:			return CMD_JNE;
 		case NOT_EQUAL:		return CMD_JE;
-		case BELOW_EQUAL: 	return CMD_JA;
-		case ABOVE_EQUAL:	return CMD_JB;
-		case BELOW:			return CMD_JAE;
+		case BELOW_EQUAL: 	return CMD_JG;
+		case ABOVE_EQUAL:	return CMD_JL;
+		case BELOW:			return CMD_JGE;
 		case INPUT: 		return CMD_IN;
 		case PRINTF:		return CMD_OUT;
 		case ADD:			return CMD_ADD;
@@ -118,7 +150,7 @@ BinaryTreeStatusCode EmitIf(Node_t* node, Backend* backend) {
 	(backend->cnt_if)++;
 	size_t old_num = (backend->cnt_if);
 
-	TABS fprintf(backend->asm_file, "#if-condition\n");
+	TABS fprintf(backend->asm_file, ";if-condition\n");
 
 		WriteAssembleCode(node->left, backend);
 
@@ -126,7 +158,7 @@ BinaryTreeStatusCode EmitIf(Node_t* node, Backend* backend) {
 
 	(backend->tabs)++;
 
-		TABS fprintf(backend->asm_file, "#if-body\n");
+		TABS fprintf(backend->asm_file, ";if-body\n");
 		WriteAssembleCode(node->right, backend);
 
 	(backend->tabs)--;
@@ -148,11 +180,11 @@ BinaryTreeStatusCode EmitWhile(Node_t* node, Backend* backend) {
 	TABS fprintf(backend->asm_file, "while%zu:\n", (backend->cnt_while));
 
 		(backend->tabs)++;
-		TABS fprintf(backend->asm_file, "#while-condition\n");
+		TABS fprintf(backend->asm_file, ";while-condition\n");
 		WriteAssembleCode(node->left,  backend);
 
 		fprintf(backend->asm_file,      "end_while%zu:\n", (backend->cnt_while));
-		TABS fprintf(backend->asm_file, "#while-body\n");
+		TABS fprintf(backend->asm_file, ";while-body\n");
 		WriteAssembleCode(node->right, backend);
 
 		TABS fprintf(backend->asm_file, "%s while%zu:\n", array_commands[CMD_JMP].cmd_name, old_num);
@@ -198,25 +230,15 @@ BinaryTreeStatusCode EmitFunctionDefinition(Node_t* node, Backend* backend) {
 	int old_scope = backend->cur_scope;
 	backend->cur_scope = (int)node->data.val_func_def;
 
-	if (!func_num) {
-		ASM_PRINTF("#bx - amount of global variables default\n");
-			ASM_PRINTF("%s %d\n", 	array_commands[CMD_PUSH].cmd_name, 	CountOfGlobalVariables(backend->id_name_table));
-			ASM_PRINTF("%s %s\n", 	array_commands[CMD_POP].cmd_name, 	STACK_FRAME_REGISTER);
-			ASM_PRINTF("%s %s\n\n", array_commands[CMD_PUSH].cmd_name, 	STACK_FRAME_REGISTER);
-
-		ASM_PRINTF("#main\n");
-			ASM_PRINTF("%s ", array_commands[CMD_CALL].cmd_name);
-			PrintNString(backend->asm_file, cur_func->string, cur_func->length);
-			ASM_PRINTF(":\n");
-			ASM_PRINTF("%s\n\n", 	array_commands[CMD_HLT].cmd_name);
-
-		func_num = 1;
+	if (func_num) {
+		ASM_PRINTF("_%d: ;", cur_func->num);
+		TABS PrintNString(backend->asm_file, cur_func->string, cur_func->length);
+		ASM_PRINTF("\n");
+		(backend->tabs)++;
 	}
 
-	TABS PrintNString(backend->asm_file, cur_func->string, cur_func->length);
-	ASM_PRINTF(":\n");
+	func_num++;
 
-	(backend->tabs)++;
 	WriteAssembleCode(node->right, backend);
 	(backend->tabs)--;
 	backend->cur_scope = old_scope;
@@ -233,7 +255,7 @@ BinaryTreeStatusCode EmitMathFunctions(Node_t* node, Backend* backend) {
 
 	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
 
-	TABS fprintf(backend->asm_file, "#%s\n", GetCommentByKeyWordType(node->data.val_key_word));
+	TABS fprintf(backend->asm_file, ";%s\n", GetCommentByKeyWordType(node->data.val_key_word));
 		WriteAssembleCode(node->left, backend);
 		WriteAssembleCode(node->right, backend);
 	TABS fprintf(backend->asm_file, "%s\n", array_commands[cur_cmd].cmd_name);
@@ -249,7 +271,7 @@ BinaryTreeStatusCode EmitAloneFunctions(Node_t* node, Backend* backend) {
 
 	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
 
-	TABS fprintf(backend->asm_file, "#%s\n", GetCommentByKeyWordType(node->data.val_key_word));
+	TABS fprintf(backend->asm_file, ";%s\n", GetCommentByKeyWordType(node->data.val_key_word));
 		WriteAssembleCode(node->right, backend);
 	TABS fprintf(backend->asm_file, "%s\n", array_commands[cur_cmd].cmd_name);
 
@@ -264,10 +286,10 @@ BinaryTreeStatusCode EmitReturn(Node_t* node, Backend* backend) {
 
 	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
 
-	TABS fprintf(backend->asm_file, "#%s\n", GetCommentByKeyWordType(node->data.val_key_word));
+	TABS fprintf(backend->asm_file, ";%s\n", GetCommentByKeyWordType(node->data.val_key_word));
 		WriteAssembleCode(node->right, backend);
 
-	TABS fprintf(backend->asm_file, "\n#write return value to register\n");
+	TABS fprintf(backend->asm_file, "\n;write return value to register\n");
 	TABS fprintf(backend->asm_file, "%s %s\n\n", array_commands[CMD_POP].cmd_name, RETURN_VALUE_REGISTER);
 
 	TABS fprintf(backend->asm_file, "%s\n", array_commands[cur_cmd].cmd_name);
@@ -306,18 +328,10 @@ BinaryTreeStatusCode EmitCallParameters(Node_t* node, Backend* backend) {
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 #define ASM_PRINTF(...) fprintf(backend->asm_file, __VA_ARGS__);
 
-	Identifier* cur_scope = &backend->id_name_table->data[backend->cur_scope];
-
-	TABS ASM_PRINTF("#push previous value of stack frame register before new call\n");
-		TABS ASM_PRINTF("%s %s\n\n", array_commands[CMD_PUSH].cmd_name, STACK_FRAME_REGISTER);
+	TABS ASM_PRINTF(";push previous value of stack frame register before new call\n");
+		TABS ASM_PRINTF("%s rbp, rsp\n", array_commands[CMD_MOV].cmd_name);
 
 	EmitCommaOp(node->left, backend);
-
-	TABS ASM_PRINTF("#stack frame register change value\n");
-		TABS ASM_PRINTF("%s %s\n", 		array_commands[CMD_PUSH].cmd_name, 	STACK_FRAME_REGISTER);
-		TABS ASM_PRINTF("%s %zu\n", 	array_commands[CMD_PUSH].cmd_name, 	cur_scope->scope_variables.size);
-		TABS ASM_PRINTF("%s\n", 		array_commands[CMD_ADD].cmd_name);
-		TABS ASM_PRINTF("%s %s\n\n",	array_commands[CMD_POP].cmd_name, 	STACK_FRAME_REGISTER);
 
 #undef ASM_PRINTF
 #undef TABS
@@ -334,15 +348,15 @@ BinaryTreeStatusCode EmitCall(Node_t* node, Backend* backend) {
 
 	EmitCallParameters(node, backend);
 
-	TABS ASM_PRINTF("#call function\n");
-		TABS ASM_PRINTF("%s ", array_commands[CMD_CALL].cmd_name);
+	TABS ASM_PRINTF(";call function\n");
+		TABS ASM_PRINTF("%s _%d ;", array_commands[CMD_CALL].cmd_name, cur_id->num);
 		PrintNString(backend->asm_file, cur_id->string, cur_id->length);
-		fprintf(backend->asm_file, ":\n");
+		fprintf(backend->asm_file, "\n");
 
-	TABS ASM_PRINTF("#Emit back stack frame register value as before calling function\n");
-		TABS ASM_PRINTF("%s %s\n\n", array_commands[CMD_POP].cmd_name, STACK_FRAME_REGISTER);
+	TABS ASM_PRINTF(";Emit back stack frame register value as before calling function\n");
+		TABS ASM_PRINTF("%s rsp, rbp\n", array_commands[CMD_MOV].cmd_name);
 
-	TABS ASM_PRINTF("#push return value of function\n");
+	TABS ASM_PRINTF(";push return value of function\n");
 		TABS ASM_PRINTF("%s %s\n", array_commands[CMD_PUSH].cmd_name, RETURN_VALUE_REGISTER);
 
 #undef ASM_PRINTF
@@ -377,7 +391,7 @@ BinaryTreeStatusCode EmitNumber(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
-	TABS fprintf(backend->asm_file, "%s %lg\n", array_commands[CMD_PUSH].cmd_name, node->data.val_num);
+	TABS fprintf(backend->asm_file, "%s %s, %lg\n", array_commands[CMD_MOV].cmd_name, ASSIGNMENT_REGISTER, node->data.val_num);
 
 #undef TABS
 
@@ -401,16 +415,16 @@ BinaryTreeStatusCode EmitAssignment(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
-	TABS fprintf(backend->asm_file, "#assignment\n");
+	TABS fprintf(backend->asm_file, ";assignment\n");
 	WriteAssembleCode(node->left, backend);
 
 	Identifier* cur_id = &backend->id_name_table->data[node->right->data.val_id];
 
 	if (backend->cur_scope == -1 || cur_id->global == 1) {
-		TABS fprintf(backend->asm_file, "%s [%d] #", array_commands[CMD_POP].cmd_name, cur_id->num);
+		TABS fprintf(backend->asm_file, "%s [_%d], %s ;", array_commands[CMD_MOV].cmd_name, cur_id->num, ASSIGNMENT_REGISTER);
 	}
 	else {
-		TABS fprintf(backend->asm_file, "%s [%s+%d] #", array_commands[CMD_POP].cmd_name, STACK_FRAME_REGISTER,
+		TABS fprintf(backend->asm_file, "%s [%s+%d] ;", array_commands[CMD_POP].cmd_name, STACK_FRAME_REGISTER,
 		GetLocalNumberOfVariable(backend->id_name_table, backend->cur_scope, cur_id->num));
 	}
 
@@ -426,8 +440,9 @@ BinaryTreeStatusCode EmitInput(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
-	TABS fprintf(backend->asm_file, "#input\n");
-	TABS fprintf(backend->asm_file, "%s\n", array_commands[CMD_IN].cmd_name);
+	TABS fprintf(backend->asm_file, ";input\n");
+	TABS fprintf(backend->asm_file, "%s ", array_commands[CMD_CALL].cmd_name);
+	fprintf(backend->asm_file, "%s\n", array_commands[CMD_IN].cmd_name);
 
 #undef TABS
 
@@ -438,9 +453,10 @@ BinaryTreeStatusCode EmitPrintf(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
-	TABS fprintf(backend->asm_file, "#printf\n");
+	TABS fprintf(backend->asm_file, ";printf\n");
 	WriteAssembleCode(node->right, backend);
-	TABS fprintf(backend->asm_file, "%s\n", array_commands[CMD_OUT].cmd_name);
+	TABS fprintf(backend->asm_file, "%s ", array_commands[CMD_CALL].cmd_name);
+	fprintf(backend->asm_file, "%s\n", array_commands[CMD_OUT].cmd_name);
 
 #undef TABS
 

@@ -1,92 +1,74 @@
-#assignment
-#input
-IN
-POP [0] #колдун
+section .data
+	_0 dq 0 ;колдун
 
-#bx - amount of global variables default
-PUSH 1
-POP BX
-PUSH BX
+section .text
+	global main
+	extern my_scanf
+	extern my_printf
 
-#main
-CALL Путник:
-HLT
+main:
+	;assignment
+	mov r8, 5
+	mov [_0], r8 ;колдун
 
-Путник:
-	#printf
-	#push previous value of stack frame register before new call
-	PUSH BX
+	;printf
+	;push previous value of stack frame register before new call
+	mov rbp, rsp
+	push [0] #колдун
+	;call function
+	call _2 ;Герой
+	;Emit back stack frame register value as before calling function
+	mov rsp, rbp
+	;push return value of function
+	push rax
+	call my_printf
 
-	PUSH [0] #колдун
-	#stack frame register change value
-	PUSH BX
-	PUSH 0
-	ADD
-	POP BX
-
-	#call function
-	CALL Герой:
-	#Emit back stack frame register value as before calling function
-	POP BX
-
-	#push return value of function
-	PUSH AX
-	OUT
-
-	#return
-	PUSH 0
+	;return
+	mov r8, 0
 	
-#write return value to register
-	POP AX
+;write return value to register
+	pop rax
 
-	RET
+	ret
 
 
-Герой:
-	POP [BX+0]
-	#if-condition
-	PUSH [BX+0] #бродяга
-	PUSH 1
-	JNE end_if1:
-		#if-body
-		#return
-		PUSH 1
+_2: ;Герой
+	pop [rbx+0]
+	;if-condition
+	push [rbx+0] #бродяга
+	mov r8, 1
+	jne end_if1:
+		;if-body
+		;return
+		mov r8, 1
 		
-#write return value to register
-		POP AX
+;write return value to register
+		pop rax
 
-		RET
+		ret
 
 	end_if1:
 
-	#return
-	#mul
-	PUSH [BX+0] #бродяга
-	#push previous value of stack frame register before new call
-	PUSH BX
-
-	#sub
-	PUSH [BX+0] #бродяга
-	PUSH 1
-	SUB
-	#stack frame register change value
-	PUSH BX
-	PUSH 1
-	ADD
-	POP BX
-
-	#call function
-	CALL Герой:
-	#Emit back stack frame register value as before calling function
-	POP BX
-
-	#push return value of function
-	PUSH AX
-	MUL
+	;return
+	;mul
+	push [rbx+0] #бродяга
+	;push previous value of stack frame register before new call
+	mov rbp, rsp
+	;sub
+	push [rbx+0] #бродяга
+	mov r8, 1
+	sub
+	;call function
+	call _2 ;Герой
+	;Emit back stack frame register value as before calling function
+	mov rsp, rbp
+	;push return value of function
+	push rax
+	mul
 	
-#write return value to register
-	POP AX
+;write return value to register
+	pop rax
 
-	RET
+	ret
 
 

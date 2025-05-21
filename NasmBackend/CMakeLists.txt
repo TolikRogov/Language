@@ -17,7 +17,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Utils)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Tree)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Standard)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Lexer)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../Processor/include)
 
 if (${DEBUG})
 	add_compile_definitions(PRINT_DEBUG)

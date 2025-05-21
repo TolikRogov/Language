@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Standard_reader.hpp"
-#include "array.hpp"
+#include "nasm_array.hpp"
 
 #define ASM_FILE_ "nasm.asm"
 
@@ -15,6 +15,7 @@ struct Backend {
 };
 
 BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table);
+BinaryTreeStatusCode SectionsDataAndText(Backend* backend, IdNameTable* id_name_table);
 BinaryTreeStatusCode WriteAssembleCode(Node_t* node, Backend* backend);
 
 const char* GetCommentByKeyWordType(KeyWordNum key_word_num);
