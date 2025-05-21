@@ -1,74 +1,89 @@
 section .data
+	String db "%d", 10, 0
 	_0 dq 0 ;колдун
 
 section .text
-	global main
+	global _start
 	extern my_scanf
 	extern my_printf
 
-main:
+_start:
 	;assignment
-	mov r8, 5
-	mov [_0], r8 ;колдун
+	push 5
+	pop qword [_0] ;колдун
 
+	push rbx
+	mov rbx, rbp
 	;printf
 	;push previous value of stack frame register before new call
+	push rbp
 	mov rbp, rsp
-	push [0] #колдун
+	push qword [_0] ;колдун
 	;call function
 	call _2 ;Герой
 	;Emit back stack frame register value as before calling function
 	mov rsp, rbp
+	pop rbp
 	;push return value of function
 	push rax
+	mov rdi, String
+	pop rsi
 	call my_printf
 
 	;return
-	mov r8, 0
-	
-;write return value to register
-	pop rax
-
-	ret
+	push 0
+	pop rdi
+	mov rax, 0x3c
+	syscall
 
 
 _2: ;Герой
-	pop [rbx+0]
+	push rbx
+	mov rbx, rbp
 	;if-condition
-	push [rbx+0] #бродяга
-	mov r8, 1
-	jne end_if1:
+	push qword [rbx - 8 * 1] ;бродяга
+	push 1
+	pop r8
+	pop r9
+	cmp r9, r8
+	jne end_if1
 		;if-body
 		;return
-		mov r8, 1
-		
-;write return value to register
+		push 1
+		;write return value to register
 		pop rax
-
+		pop rbx
 		ret
 
 	end_if1:
 
 	;return
 	;mul
-	push [rbx+0] #бродяга
+	push qword [rbx - 8 * 1] ;бродяга
 	;push previous value of stack frame register before new call
+	push rbp
 	mov rbp, rsp
 	;sub
-	push [rbx+0] #бродяга
-	mov r8, 1
-	sub
+	push qword [rbx - 8 * 1] ;бродяга
+	push 1
+	pop r8
+	pop r9
+	sub r9, r8
+	push r9
 	;call function
 	call _2 ;Герой
 	;Emit back stack frame register value as before calling function
 	mov rsp, rbp
+	pop rbp
 	;push return value of function
 	push rax
-	mul
-	
-;write return value to register
+	pop r8
 	pop rax
-
+	mul r8
+	push rax
+	;write return value to register
+	pop rax
+	pop rbx
 	ret
 
 

@@ -5,3 +5,8 @@
 
 cmake -S ./ -B build/Debug -DCMAKE_BUILD_TYPE=Debug
 cmake --build build/Debug && ./build/Debug/Backend
+
+nasm -f elf64 printf.s -o build/printf.o -l build/printf.lst
+nasm -f elf64 nasm.asm -o build/nasm.o -l build/printf.lst
+ld -o build/nasm build/nasm.o build/printf.o
+./build/nasm
