@@ -2,7 +2,7 @@
 
 STATUS=1
 
-for dir in Frontend Middleware Backend Processor
+for dir in Frontend Middleware NasmBackend
 do
 	if [ $STATUS == 1 ];
 	then
