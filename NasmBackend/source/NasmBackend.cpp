@@ -59,6 +59,7 @@ BinaryTreeStatusCode SectionsDataAndText(Backend* backend, IdNameTable* id_name_
 	fprintf(backend->asm_file, "\talign 16\n");
 	fprintf(backend->asm_file, "\ttemp dq 0\n");
 	fprintf(backend->asm_file, "\tString db \"%%d\", 10, 0\n");
+	fprintf(backend->asm_file, "\tScanfString db \"%%d\", 0\n");
 
 	int func_num = 0;
 
@@ -340,7 +341,7 @@ BinaryTreeStatusCode EmitReturn(Node_t* node, Backend* backend) {
 	TABS fprintf(backend->asm_file, ";%s\n", GetCommentByKeyWordType(node->data.val_key_word));
 		WriteAssembleCode(node->right, backend);
 
-	if (CountOfGlobals(backend->id_name_table) - 1 == backend->cur_scope) {
+	if (CountOfGlobalVariables(backend->id_name_table) == backend->cur_scope) {
 		TABS fprintf(backend->asm_file, "%s rdi\n", array_commands[CMD_POP].cmd_name);
 		TABS fprintf(backend->asm_file, "%s rax, 0x3c\n", array_commands[CMD_MOV].cmd_name);
 		TABS fprintf(backend->asm_file, "syscall\n");
@@ -434,7 +435,7 @@ BinaryTreeStatusCode EmitIdentifier(Node_t* node, Backend* backend) {
 
 	Identifier* cur_id = &backend->id_name_table->data[node->data.val_id];
 
-	if (backend->cur_scope == -1 || cur_id->global == 1 || CountOfGlobals(backend->id_name_table) - 1 == backend->cur_scope) {
+	if (backend->cur_scope == -1 || cur_id->global == 1 || CountOfGlobalVariables(backend->id_name_table) == backend->cur_scope) {
 		TABS fprintf(backend->asm_file, "%s qword [_%d] ;", array_commands[CMD_PUSH].cmd_name, cur_id->num);
 	}
 	else {
@@ -491,7 +492,7 @@ BinaryTreeStatusCode EmitAssignment(Node_t* node, Backend* backend) {
 
 	Identifier* cur_id = &backend->id_name_table->data[node->right->data.val_id];
 
-	if (backend->cur_scope == -1 || cur_id->global == 1 || CountOfGlobals(backend->id_name_table) - 1 == backend->cur_scope) {
+	if (backend->cur_scope == -1 || cur_id->global == 1 || CountOfGlobalVariables(backend->id_name_table) == backend->cur_scope) {
 		TABS fprintf(backend->asm_file, "%s qword [_%d] ;", array_commands[CMD_POP].cmd_name, cur_id->num);
 	}
 	else {
@@ -512,8 +513,10 @@ BinaryTreeStatusCode EmitInput(Node_t* node, Backend* backend) {
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
 	TABS fprintf(backend->asm_file, ";input\n");
+	TABS fprintf(backend->asm_file, "%s rdi, ScanfString\n", array_commands[CMD_MOV].cmd_name);
 	TABS fprintf(backend->asm_file, "%s ", array_commands[CMD_CALL].cmd_name);
 	fprintf(backend->asm_file, "%s\n", array_commands[CMD_IN].cmd_name);
+	TABS fprintf(backend->asm_file, "%s %s\n", array_commands[CMD_PUSH].cmd_name, RETURN_VALUE_REGISTER);
 
 #undef TABS
 

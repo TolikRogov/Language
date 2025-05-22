@@ -6,9 +6,8 @@ DEF_CMD_(MOV, mov)
 
 DEF_CMD_(ADD, add)
 DEF_CMD_(SUB, sub)
-DEF_CMD_(DIV, div)
-DEF_CMD_(MUL, mul)
-DEF_CMD_(IDIV, idiv)
+DEF_CMD_(DIV, idiv)
+DEF_CMD_(MUL, imul)
 
 DEF_CMD_(IN, my_scanf)
 DEF_CMD_(OUT, my_printf)
