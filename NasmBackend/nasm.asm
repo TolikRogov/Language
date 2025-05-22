@@ -56,7 +56,13 @@ _start:
 	end_while1:
 
 	;printf
+	;add
 	push qword [_2] ;герой
+	push 1000
+	pop r8
+	pop r9
+	add r9, r8
+	push r9
 	mov rdi, String
 	pop rsi
 	call my_printf
