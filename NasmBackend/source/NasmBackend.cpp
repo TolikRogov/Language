@@ -199,11 +199,11 @@ BinaryTreeStatusCode EmitWhile(Node_t* node, Backend* backend) {
 		TABS fprintf(backend->asm_file, ";while-condition\n");
 		WriteAssembleCode(node->left,  backend);
 
-		fprintf(backend->asm_file,      "end_while%zu:\n", (backend->cnt_while));
+		fprintf(backend->asm_file,      "end_while%zu\n", (backend->cnt_while));
 		TABS fprintf(backend->asm_file, ";while-body\n");
 		WriteAssembleCode(node->right, backend);
 
-		TABS fprintf(backend->asm_file, "%s while%zu:\n", array_commands[CMD_JMP].cmd_name, old_num);
+		TABS fprintf(backend->asm_file, "%s while%zu\n", array_commands[CMD_JMP].cmd_name, old_num);
 		(backend->tabs)--;
 
 	TABS fprintf(backend->asm_file, "end_while%zu:\n", old_num);
