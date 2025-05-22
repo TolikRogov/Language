@@ -11,7 +11,8 @@ static BinaryTreeStatusCode EmitDefinitionParameters(Node_t* node, Backend* back
 static BinaryTreeStatusCode EmitFunctionDefinition(Node_t* node, Backend* backend);
 static BinaryTreeStatusCode EmitMathFunctionsSqrtOp(Node_t* node, Backend* backend);
 static BinaryTreeStatusCode EmitMathFunctionsTwoOp(Node_t* node, Backend* backend);
-static BinaryTreeStatusCode EmitMathFunctionsOneOp(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitMathFunctionsImul(Node_t* node, Backend* backend);
+static BinaryTreeStatusCode EmitMathFunctionsIdiv(Node_t* node, Backend* backend);
 static BinaryTreeStatusCode EmitAloneFunctions(Node_t* node, Backend* backend);
 static BinaryTreeStatusCode EmitReturn(Node_t* node, Backend* backend);
 static BinaryTreeStatusCode EmitParameters(Node_t* node, Backend* backend);
@@ -56,8 +57,6 @@ BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table) {
 BinaryTreeStatusCode SectionsDataAndText(Backend* backend, IdNameTable* id_name_table) {
 
 	fprintf(backend->asm_file, "section .data\n");
-	fprintf(backend->asm_file, "\talign 16\n");
-	fprintf(backend->asm_file, "\ttemp dq 0\n");
 	fprintf(backend->asm_file, "\tString db \"%%d\", 10, 0\n");
 	fprintf(backend->asm_file, "\tScanfString db \"%%d\", 0\n");
 
@@ -163,6 +162,7 @@ BinaryTreeStatusCode EmitAbort(Node_t* node, Backend* backend) {
 BinaryTreeStatusCode EmitIf(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
+#define ASM_PRINTF(...) fprintf(backend->asm_file, __VA_ARGS__);
 
 	(backend->cnt_if)++;
 	size_t old_num = (backend->cnt_if);
@@ -180,8 +180,10 @@ BinaryTreeStatusCode EmitIf(Node_t* node, Backend* backend) {
 
 	(backend->tabs)--;
 
+	TABS ASM_PRINTF("%s rbx\n", array_commands[CMD_POP].cmd_name);
 	TABS fprintf(backend->asm_file, "end_if%zu:\n", old_num);
 
+#undef ASM_PRINTF
 #undef TABS
 
 	return TREE_NO_ERROR;
@@ -277,7 +279,7 @@ BinaryTreeStatusCode EmitMathFunctionsTwoOp(Node_t* node, Backend* backend) {
 	return TREE_NO_ERROR;
 }
 
-BinaryTreeStatusCode EmitMathFunctionsOneOp(Node_t* node, Backend* backend) {
+BinaryTreeStatusCode EmitMathFunctionsImul(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
@@ -288,7 +290,27 @@ BinaryTreeStatusCode EmitMathFunctionsOneOp(Node_t* node, Backend* backend) {
 		WriteAssembleCode(node->right, backend);
 	TABS fprintf(backend->asm_file, "%s r8\n", array_commands[CMD_POP].cmd_name);
 	TABS fprintf(backend->asm_file, "%s rax\n", array_commands[CMD_POP].cmd_name);
-	TABS fprintf(backend->asm_file, "%s r8\n", array_commands[cur_cmd].cmd_name);
+	TABS fprintf(backend->asm_file, "%s eax, r8d\n", array_commands[cur_cmd].cmd_name);
+	TABS fprintf(backend->asm_file, "%s rax\n", array_commands[CMD_PUSH].cmd_name);
+
+#undef TABS
+
+	return TREE_NO_ERROR;
+}
+
+BinaryTreeStatusCode EmitMathFunctionsIdiv(Node_t* node, Backend* backend) {
+
+#define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
+
+	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
+
+	TABS fprintf(backend->asm_file, ";%s\n", GetCommentByKeyWordType(node->data.val_key_word));
+		WriteAssembleCode(node->left, backend);
+		WriteAssembleCode(node->right, backend);
+	TABS fprintf(backend->asm_file, "%s r8\n", array_commands[CMD_POP].cmd_name);
+	TABS fprintf(backend->asm_file, "%s rax\n", array_commands[CMD_POP].cmd_name);
+	TABS fprintf(backend->asm_file, "cdq\n");
+	TABS fprintf(backend->asm_file, "%s r8d\n", array_commands[cur_cmd].cmd_name);
 	TABS fprintf(backend->asm_file, "%s rax\n", array_commands[CMD_PUSH].cmd_name);
 
 #undef TABS
@@ -305,12 +327,11 @@ BinaryTreeStatusCode EmitMathFunctionsSqrtOp(Node_t* node, Backend* backend) {
 	TABS fprintf(backend->asm_file, ";%s\n", GetCommentByKeyWordType(node->data.val_key_word));
 		WriteAssembleCode(node->left, backend);
 		WriteAssembleCode(node->right, backend);
-	TABS fprintf(backend->asm_file, "%s r8\n", array_commands[CMD_POP].cmd_name);
-	TABS fprintf(backend->asm_file, "mov [temp], r8\n");
-	TABS fprintf(backend->asm_file, "movdqa xmm1, [temp]\n");
-	TABS fprintf(backend->asm_file, "%s xmm0, xmm1\n", array_commands[cur_cmd].cmd_name);
-	TABS fprintf(backend->asm_file, "movq [temp], xmm0\n");
-	TABS fprintf(backend->asm_file, "%s qword [temp]\n", array_commands[CMD_PUSH].cmd_name);
+	TABS fprintf(backend->asm_file, "pop r8\n");
+	TABS fprintf(backend->asm_file, "cvtsi2sd xmm0, r8\n");
+	TABS fprintf(backend->asm_file, "%s xmm0, xmm0\n", array_commands[cur_cmd].cmd_name);
+	TABS fprintf(backend->asm_file, "cvtsd2si rax, xmm0\n");
+	TABS fprintf(backend->asm_file, "%s rax\n", array_commands[CMD_PUSH].cmd_name);
 
 #undef TABS
 
@@ -561,8 +582,8 @@ BinaryTreeStatusCode WriteAssembleCode(Node_t* node, Backend* backend) {
 				case ASSIGNMENT: 	{ EmitAssignment(node, backend); 			break; }
 				case INPUT: 		{ EmitInput(node, backend); 				break; }
 				case PRINTF: 		{ EmitPrintf(node, backend); 				break; }
-				case MUL:
-				case DIV:			{ EmitMathFunctionsOneOp(node, backend); 	break; }
+				case MUL:			{ EmitMathFunctionsImul(node, backend); 	break; }
+				case DIV:			{ EmitMathFunctionsIdiv(node, backend); 	break; }
 				case SQRT:			{ EmitMathFunctionsSqrtOp(node, backend); 	break; }
 				case SUB:
 				case ADD: 			{ EmitMathFunctionsTwoOp(node, backend); 	break; }
