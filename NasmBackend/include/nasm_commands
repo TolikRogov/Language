@@ -13,7 +13,7 @@ DEF_CMD_(IDIV, idiv)
 DEF_CMD_(IN, my_scanf)
 DEF_CMD_(OUT, my_printf)
 
-DEF_CMD_(SQRT, fsqrt)
+DEF_CMD_(SQRT, sqrtsd)
 DEF_CMD_(SIN, fsin)
 DEF_CMD_(COS, fcos)
 

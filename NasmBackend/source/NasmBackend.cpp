@@ -56,12 +56,22 @@ BinaryTreeStatusCode RunBackend(Tree* tree, IdNameTable* id_name_table) {
 BinaryTreeStatusCode SectionsDataAndText(Backend* backend, IdNameTable* id_name_table) {
 
 	fprintf(backend->asm_file, "section .data\n");
+	fprintf(backend->asm_file, "\talign 16\n");
+	fprintf(backend->asm_file, "\ttemp dq 0\n");
 	fprintf(backend->asm_file, "\tString db \"%%d\", 10, 0\n");
+
+	int func_num = 0;
 
 	for (size_t i = 0; i < id_name_table->size - 1; i++) {
 		Identifier cur_id = id_name_table->data[i];
 
-		if (cur_id.type != ID_VAR || !cur_id.global)
+		if (func_num == 2)
+			break;
+
+		if (cur_id.type == ID_FUNCTION)
+			func_num++;
+
+		if (cur_id.type != ID_VAR)
 			continue;
 
 		fprintf(backend->asm_file, "\t_%zu dq 0 ;", i);
@@ -295,9 +305,11 @@ BinaryTreeStatusCode EmitMathFunctionsSqrtOp(Node_t* node, Backend* backend) {
 		WriteAssembleCode(node->left, backend);
 		WriteAssembleCode(node->right, backend);
 	TABS fprintf(backend->asm_file, "%s r8\n", array_commands[CMD_POP].cmd_name);
-	TABS fprintf(backend->asm_file, "fld qword r8\n");
-	TABS fprintf(backend->asm_file, "%s\n", array_commands[cur_cmd].cmd_name);
-	TABS fprintf(backend->asm_file, "fstp qword rax\n");
+	TABS fprintf(backend->asm_file, "mov [temp], r8\n");
+	TABS fprintf(backend->asm_file, "movdqa xmm1, [temp]\n");
+	TABS fprintf(backend->asm_file, "%s xmm0, xmm1\n", array_commands[cur_cmd].cmd_name);
+	TABS fprintf(backend->asm_file, "movq [temp], xmm0\n");
+	TABS fprintf(backend->asm_file, "%s qword [temp]\n", array_commands[CMD_PUSH].cmd_name);
 
 #undef TABS
 
@@ -323,18 +335,15 @@ BinaryTreeStatusCode EmitReturn(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
-	static int func_num = 0;
-
 	Commands cur_cmd = GetCmdByKeyWordType(node->data.val_key_word);
 
 	TABS fprintf(backend->asm_file, ";%s\n", GetCommentByKeyWordType(node->data.val_key_word));
 		WriteAssembleCode(node->right, backend);
 
-	if (!func_num) {
+	if (CountOfGlobals(backend->id_name_table) - 1 == backend->cur_scope) {
 		TABS fprintf(backend->asm_file, "%s rdi\n", array_commands[CMD_POP].cmd_name);
 		TABS fprintf(backend->asm_file, "%s rax, 0x3c\n", array_commands[CMD_MOV].cmd_name);
 		TABS fprintf(backend->asm_file, "syscall\n");
-		func_num++;
 		return TREE_NO_ERROR;
 	}
 
@@ -425,7 +434,7 @@ BinaryTreeStatusCode EmitIdentifier(Node_t* node, Backend* backend) {
 
 	Identifier* cur_id = &backend->id_name_table->data[node->data.val_id];
 
-	if (backend->cur_scope == -1 || cur_id->global == 1) {
+	if (backend->cur_scope == -1 || cur_id->global == 1 || CountOfGlobals(backend->id_name_table) - 1 == backend->cur_scope) {
 		TABS fprintf(backend->asm_file, "%s qword [_%d] ;", array_commands[CMD_PUSH].cmd_name, cur_id->num);
 	}
 	else {
@@ -445,7 +454,15 @@ BinaryTreeStatusCode EmitNumber(Node_t* node, Backend* backend) {
 
 #define TABS { for (size_t i = 0; i < backend->tabs; i++) {fprintf(backend->asm_file, "\t");} }
 
-	TABS fprintf(backend->asm_file, "%s %lg\n", array_commands[CMD_PUSH].cmd_name, node->data.val_num);
+	if (isinf(node->data.val_num)) {
+		TABS fprintf(backend->asm_file, "%s 999\n", array_commands[CMD_PUSH].cmd_name);
+	}
+	else if (isnan(node->data.val_num)) {
+		TABS fprintf(backend->asm_file, "%s -999\n", array_commands[CMD_PUSH].cmd_name);
+	}
+	else {
+		TABS fprintf(backend->asm_file, "%s %lg\n", array_commands[CMD_PUSH].cmd_name, node->data.val_num);
+	}
 
 #undef TABS
 
@@ -474,7 +491,7 @@ BinaryTreeStatusCode EmitAssignment(Node_t* node, Backend* backend) {
 
 	Identifier* cur_id = &backend->id_name_table->data[node->right->data.val_id];
 
-	if (backend->cur_scope == -1 || cur_id->global == 1) {
+	if (backend->cur_scope == -1 || cur_id->global == 1 || CountOfGlobals(backend->id_name_table) - 1 == backend->cur_scope) {
 		TABS fprintf(backend->asm_file, "%s qword [_%d] ;", array_commands[CMD_POP].cmd_name, cur_id->num);
 	}
 	else {
